@@ -4,6 +4,8 @@ from sqlalchemy import String, Boolean, DateTime, ForeignKey, Text, Integer, JSO
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.database import Base
+from sqlalchemy import Boolean as Bool
+
 
 def utcnow():
     return datetime.now(timezone.utc)
@@ -73,3 +75,29 @@ class ReviewResult(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     submission: Mapped["CodeSubmission"] = relationship(back_populates="review")
+
+class Contest(Base):
+    __tablename__ = "contests"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    platform: Mapped[str] = mapped_column(String(50), nullable=False)          # "codeforces" | "leetcode"
+    external_id: Mapped[str] = mapped_column(String(255), nullable=False)      # platform's own contest id/slug
+    name: Mapped[str] = mapped_column(String(500), nullable=False)
+    start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    duration_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+    is_finished: Mapped[bool] = mapped_column(Boolean, default=False)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    __table_args__ = (
+        # prevent duplicate rows on repeated fetches
+    )
+
+
+class ContestTrack(Base):
+    __tablename__ = "contest_tracks"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    contest_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("contests.id", ondelete="CASCADE"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
