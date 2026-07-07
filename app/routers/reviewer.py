@@ -36,6 +36,8 @@ async def get_current_user(
 
 @router.post("/submit", response_model=SubmissionOut, status_code=status.HTTP_201_CREATED)
 async def submit_code(
+    from app.weakness.service import process_review_for_weaknesses
+    await process_review_for_weaknesses(db, submission.id, current_user.id)
     payload: CodeReviewRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),

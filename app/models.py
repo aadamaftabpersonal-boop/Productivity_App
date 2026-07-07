@@ -103,3 +103,39 @@ class ContestTrack(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     contest_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("contests.id", ondelete="CASCADE"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+class ConceptTag(Base):
+    """Canonical concept taxonomy — the normalization layer."""
+    __tablename__ = "concept_tags"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    canonical_name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)  # e.g. "sliding_window"
+    display_name: Mapped[str] = mapped_column(String(100), nullable=False)                  # e.g. "Sliding Window"
+    aliases: Mapped[list] = mapped_column(JSON, default=list)  # e.g. ["sliding window technique", "window sliding"]
+
+
+class SubmissionConcept(Base):
+    """Link table: which canonical concepts were flagged on which submission,
+    and whether it was flagged as a WEAKNESS (via suggestions) vs just USED (via concepts)."""
+    __tablename__ = "submission_concepts"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    submission_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("code_submissions.id", ondelete="CASCADE"), nullable=False)
+    concept_tag_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("concept_tags.id"), nullable=False)
+    was_flagged_as_gap: Mapped[bool] = mapped_column(Boolean, default=False)  # True if it came from `suggestions`, not just `concepts`
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class WeaknessRecord(Base):
+    """Aggregated per-user, per-concept weakness state. Updated after each review."""
+    __tablename__ = "weakness_records"
+    __table_args__ = (UniqueConstraint("user_id", "concept_tag_id", name="uq_user_concept"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    concept_tag_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("concept_tags.id"), nullable=False)
+    gap_count: Mapped[int] = mapped_column(Integer, default=0)          # times flagged as a gap
+    last_flagged_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_resurfaced_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    is_active_weakness: Mapped[bool] = mapped_column(Boolean, default=False)  # crosses recurrence threshold
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
