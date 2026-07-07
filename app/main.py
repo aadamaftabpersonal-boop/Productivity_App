@@ -1,12 +1,47 @@
-from fastapi import FastAPI
-from app.routers import auth, reviewer, contests, weakness
+from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.routers import auth, reviewer, contests, weakness, dashboard
 
 app = FastAPI(title="Student Portal API", version="0.1.0")
+
+# CORS — restrict origins to your actual frontend URL(s) once deployed.
+# "*" is fine for local dev only; tighten before demo/deploy.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # add your deployed frontend URL here too
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth.router)
 app.include_router(reviewer.router)
 app.include_router(contests.router)
 app.include_router(weakness.router)
+app.include_router(dashboard.router)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # consistent error shape across the app — makes frontend error handling simpler
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors(), "message": "Validation failed"},
+    )
+
+
+@app.exception_handler(SQLAlchemyError)
+async def db_exception_handler(request: Request, exc: SQLAlchemyError):
+    # never leak raw SQLAlchemy internals to the client
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"message": "Database error occurred"},
+    )
+
 
 @app.get("/health")
 async def health_check():

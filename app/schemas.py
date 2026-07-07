@@ -82,3 +82,11 @@ class ResurfaceOut(BaseModel):
     url: str | None = None
     submission_id: str | None = None
     instruction: str
+
+class DashboardOut(BaseModel):
+    user: UserOut
+    recent_submissions: list[SubmissionOut]
+    active_weaknesses: list[ActiveWeaknessOut]
+    resurface_item: ResurfaceOut | None
+    upcoming_contests: list[ContestOut]
+    tracked_contests: list[ContestOut]
