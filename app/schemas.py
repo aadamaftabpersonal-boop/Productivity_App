@@ -69,3 +69,16 @@ class ContestOut(BaseModel):
 
 class TrackContestRequest(BaseModel):
     contest_id: uuid.UUID
+
+class ActiveWeaknessOut(BaseModel):
+    concept: str
+    gap_count: int
+    last_flagged_at: datetime | None
+
+class ResurfaceOut(BaseModel):
+    mode: str
+    concept: str
+    problem_title: str | None = None
+    url: str | None = None
+    submission_id: str | None = None
+    instruction: str

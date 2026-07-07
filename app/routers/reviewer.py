@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from app.weakness.service import process_review_for_weaknesses
 
 from app.database import get_db
 from app.models import User, CodeSubmission, ReviewResult
@@ -36,8 +37,6 @@ async def get_current_user(
 
 @router.post("/submit", response_model=SubmissionOut, status_code=status.HTTP_201_CREATED)
 async def submit_code(
-    from app.weakness.service import process_review_for_weaknesses
-    await process_review_for_weaknesses(db, submission.id, current_user.id)
     payload: CodeReviewRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -81,7 +80,11 @@ async def submit_code(
     )
     db.add(review)
     await db.commit()
-
+    try:
+        from app.weakness.service import process_review_for_weaknesses
+        await process_review_for_weaknesses(db, submission.id, current_user.id)
+    except Exception as e:
+        print(f"Background weakness tracking failed: {str(e)}")
     result = await db.execute(
         select(CodeSubmission)
         .options(selectinload(CodeSubmission.review))
