@@ -1,0 +1,20 @@
+/* 1. Import Tailwind v4 core */
+@import "tailwindcss";
+
+/* 2. Configure your custom theme tokens directly in the CSS */
+@theme {
+  --color-base: #1a1a1a;        /* Swap with your actual background color hex */
+  --color-text: #f5f5f5;        /* Swap with your actual text color hex */
+  --color-tier-blue: #3b82f6;   /* Swap with your actual competitive tier color hex */
+}
+
+/* 3. Apply styles using standard CSS variables or @apply */
+body {
+  background-color: var(--color-base);
+  color: var(--color-text);
+  @apply font-sans;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--color-tier-blue) 30%, transparent);
+}
