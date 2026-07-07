@@ -1,4 +1,5 @@
-from tree_sitter_languages import get_parser
+from tree_sitter import Parser
+import tree_sitter_language_pack
 
 LANG_MAP = {
     "python": "python",
@@ -25,7 +26,13 @@ def analyze_structure(code: str, language: str) -> dict:
     if lang_key is None:
         raise ValueError(f"Unsupported language: {language}")
 
-    parser = get_parser(lang_key)
+    # --- MODERN API UPDATE START ---
+    # Fetch the compiled language pack object
+    language_pack = tree_sitter_language_pack.get_language(lang_key)
+    # Correctly initialize the modern Parser passing 1 argument
+    parser = Parser(language_pack)
+    # --- MODERN API UPDATE END ---
+
     tree = parser.parse(bytes(code, "utf8"))
     root = tree.root_node
 
