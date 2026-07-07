@@ -24,7 +24,6 @@ export default function Reviewer() {
     try {
       const { data } = await client.post("/reviewer/submit", form);
       setSelected(data);
-      setForm({ ...form, code: "" });
       loadHistory();
     } catch (err) {
       setError(err.response?.data?.detail || "Review failed.");

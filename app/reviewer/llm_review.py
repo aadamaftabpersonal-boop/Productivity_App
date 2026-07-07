@@ -28,7 +28,8 @@ Respond with ONLY a valid JSON object, no markdown fences, no preamble, no expla
 }
 
 Rules:
-- If the code is already optimal, say so plainly in better_approach and suggestions can be an empty list.
+- If the code is already optimal, say so plainly in better_approach and suggestions MUST be an empty list. Do not list suggestions if you are also claiming the approach is already optimal — these two fields must never contradict each other.
+- If suggestions is non-empty, better_approach must NOT claim the code is already optimal — it must describe what the optimal approach actually looks like instead.
 - Be specific: name exact data structures, algorithms, or techniques (e.g. "two-pointer", "monotonic stack", "binary search on answer"), not vague advice.
 - Ground your complexity analysis using the structural facts given, but use your own judgment on the code itself too.
 - Never pad suggestions with generic advice like "add comments" unless code quality genuinely suffers."""
