@@ -5,6 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.database import Base
 from sqlalchemy import Boolean as Bool
+from sqlalchemy import UniqueConstraint
 
 
 def utcnow():
@@ -78,7 +79,7 @@ class ReviewResult(Base):
 
 class Contest(Base):
     __tablename__ = "contests"
-
+    __table_args__ = (UniqueConstraint("platform", "external_id", name="uq_platform_external_id"),)
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     platform: Mapped[str] = mapped_column(String(50), nullable=False)          # "codeforces" | "leetcode"
     external_id: Mapped[str] = mapped_column(String(255), nullable=False)      # platform's own contest id/slug
@@ -96,7 +97,7 @@ class Contest(Base):
 
 class ContestTrack(Base):
     __tablename__ = "contest_tracks"
-
+     __table_args__ = (UniqueConstraint("user_id", "contest_id", name="uq_user_contest"),)
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     contest_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("contests.id", ondelete="CASCADE"), nullable=False)
