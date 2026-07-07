@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy import pool
 from alembic import context
 
-from database import Base
+from app.database import Base
 from config import settings
 from models import User, RefreshToken  # noqa: import so metadata is populated
 
