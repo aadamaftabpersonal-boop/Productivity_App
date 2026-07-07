@@ -56,3 +56,16 @@ class SubmissionOut(BaseModel):
     problem_title: str | None
     created_at: datetime
     review: ReviewOut | None
+
+class ContestOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    platform: str
+    name: str
+    start_time: datetime
+    duration_seconds: int
+    url: str
+    is_finished: bool
+
+class TrackContestRequest(BaseModel):
+    contest_id: uuid.UUID
