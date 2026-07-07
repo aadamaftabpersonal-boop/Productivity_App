@@ -5,8 +5,8 @@ from sqlalchemy import pool
 from alembic import context
 
 from app.database import Base
-from config import settings
-from models import User, RefreshToken  # noqa: import so metadata is populated
+from app.config import settings
+from app.models import User, RefreshToken  # noqa: import so metadata is populated
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)
