@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy import pool
 from alembic import context
 
-from app.database import Base
-from app.config import settings
-from app.models import User, RefreshToken  # noqa: import so metadata is populated
+from database import Base
+from config import settings
+from models import User, RefreshToken  # noqa: import so metadata is populated
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)
