@@ -57,7 +57,7 @@ async def submit_code(
     await db.flush()  # get submission.id before commit
 
     try:
-        review_data = get_review(
+        review_data = await get_review(
             code=payload.code,
             language=payload.language,
             heuristics=heuristics,

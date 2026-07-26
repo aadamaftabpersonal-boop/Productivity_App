@@ -1,9 +1,9 @@
 import json
 import re
-from groq import Groq
+from groq import AsyncGroq
 from app.config import settings
 
-client = Groq(api_key=settings.groq_api_key)
+client = AsyncGroq(api_key=settings.groq_api_key)
 
 SYSTEM_PROMPT = """You are a world-class competitive programmer reviewing a student's DSA/CP code, in the style of a top competitive programmer explaining things clearly to someone learning.
 
@@ -60,10 +60,10 @@ def _extract_json(raw: str) -> dict:
     return json.loads(match.group(0))
 
 
-def get_review(code: str, language: str, heuristics: dict, problem_title: str | None = None, problem_statement: str | None = None) -> dict:
+async def get_review(code: str, language: str, heuristics: dict, problem_title: str | None = None, problem_statement: str | None = None) -> dict:
     user_prompt = build_user_prompt(code, language, heuristics, problem_title, problem_statement)
 
-    completion = client.chat.completions.create(
+    completion = await client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
