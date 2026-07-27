@@ -6,13 +6,18 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.routers import auth, reviewer, contests, weakness, dashboard
 
-app = FastAPI(title="Student Portal API", version="0.1.0")
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
-# CORS — restrict origins to your actual frontend URL(s) once deployed.
-# "*" is fine for local dev only; tighten before demo/deploy.
+limiter = Limiter(key_func=get_remote_address)
+app = FastAPI(title="Student Portal API", version="0.1.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # add your deployed frontend URL here too
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,6 +28,7 @@ app.include_router(reviewer.router)
 app.include_router(contests.router)
 app.include_router(weakness.router)
 app.include_router(dashboard.router)
+
 
 
 @app.exception_handler(RequestValidationError)

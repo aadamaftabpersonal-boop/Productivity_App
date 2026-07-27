@@ -51,6 +51,7 @@ class CodeSubmission(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    domain: Mapped[str] = mapped_column(String(50), default="cp", nullable=False)  # "cp" | "ml" | "swe"
     language: Mapped[str] = mapped_column(String(50), nullable=False)
     problem_title: Mapped[str] = mapped_column(String(255), nullable=True)
     problem_statement: Mapped[str] = mapped_column(Text, nullable=True)
@@ -68,6 +69,9 @@ class ReviewResult(Base):
 
     time_complexity: Mapped[str] = mapped_column(String(50), nullable=True)
     space_complexity: Mapped[str] = mapped_column(String(50), nullable=True)
+    measured_complexity: Mapped[str] = mapped_column(String(50), nullable=True)
+    complexity_disagreement: Mapped[bool] = mapped_column(Boolean, default=False)
+    complexity_warning: Mapped[str] = mapped_column(Text, nullable=True)
     concepts: Mapped[list] = mapped_column(JSON, default=list)          # e.g. ["sliding window", "two pointers"]
     suggestions: Mapped[list] = mapped_column(JSON, default=list)       # list of {issue, why, fix}
     better_approach: Mapped[str] = mapped_column(Text, nullable=True)   # tourist-style narrative
@@ -76,6 +80,7 @@ class ReviewResult(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     submission: Mapped["CodeSubmission"] = relationship(back_populates="review")
+
 
 class Contest(Base):
     __tablename__ = "contests"

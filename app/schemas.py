@@ -30,6 +30,7 @@ class RefreshRequest(BaseModel):
 class CodeReviewRequest(BaseModel):
     language: str  # "python" | "cpp" | "java"
     code: str
+    domain: str = "cp"  # "cp" | "ml" | "swe"
     problem_title: str | None = None
     problem_statement: str | None = None
 
@@ -43,6 +44,9 @@ class ReviewOut(BaseModel):
     id: uuid.UUID
     time_complexity: str | None
     space_complexity: str | None
+    measured_complexity: str | None = None
+    complexity_disagreement: bool = False
+    complexity_warning: str | None = None
     concepts: list[str]
     suggestions: list[dict]
     better_approach: str | None
@@ -53,9 +57,11 @@ class SubmissionOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
     language: str
+    domain: str = "cp"
     problem_title: str | None
     created_at: datetime
     review: ReviewOut | None
+
 
 class ContestOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)

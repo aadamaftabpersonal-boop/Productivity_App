@@ -14,6 +14,13 @@ from app.security import (
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from fastapi import Request
+
+limiter = Limiter(key_func=get_remote_address)
+
+
 async def issue_token_pair(db: AsyncSession, user: User) -> TokenPair:
     access = create_access_token(str(user.id), user.role)
     refresh, jti, expires_at = create_refresh_token(str(user.id))
@@ -25,7 +32,8 @@ async def issue_token_pair(db: AsyncSession, user: User) -> TokenPair:
 
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-async def register(payload: UserCreate, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def register(request: Request, payload: UserCreate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == payload.email))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -42,7 +50,8 @@ async def register(payload: UserCreate, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenPair)
-async def login(payload: UserLogin, db: AsyncSession = Depends(get_db)):
+@limiter.limit("15/minute")
+async def login(request: Request, payload: UserLogin, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
 
@@ -55,7 +64,9 @@ async def login(payload: UserLogin, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=TokenPair)
-async def refresh_token(payload: RefreshRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("30/minute")
+async def refresh_token(request: Request, payload: RefreshRequest, db: AsyncSession = Depends(get_db)):
+
     try:
         decoded = decode_token(payload.refresh_token)
     except ValueError:

@@ -35,12 +35,23 @@ async def get_current_user(
     return user
 
 
+from app.reviewer.complexity_sandbox import measure_empirical_complexity, cross_check_complexity
+
+MAX_CODE_SIZE_BYTES = 65536  # 64KB input size limit (closes ISSUE-006)
+
+
 @router.post("/submit", response_model=SubmissionOut, status_code=status.HTTP_201_CREATED)
 async def submit_code(
     payload: CodeReviewRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    if len(payload.code.encode("utf-8")) > MAX_CODE_SIZE_BYTES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Code size exceeds maximum limit of {MAX_CODE_SIZE_BYTES // 1024}KB",
+        )
+
     try:
         heuristics = analyze_structure(payload.code, payload.language)
     except ValueError as e:
@@ -48,6 +59,7 @@ async def submit_code(
 
     submission = CodeSubmission(
         user_id=current_user.id,
+        domain=payload.domain,
         language=payload.language,
         problem_title=payload.problem_title,
         problem_statement=payload.problem_statement,
@@ -68,10 +80,19 @@ async def submit_code(
         await db.rollback()
         raise HTTPException(status_code=502, detail=f"Review generation failed: {str(e)}")
 
+    # Empirical complexity measurement & cross-check (closes ISSUE-003)
+    empirical_fit, _ = measure_empirical_complexity(payload.code, payload.language)
+    has_disagreement, warning_msg = cross_check_complexity(
+        review_data.get("time_complexity"), empirical_fit
+    )
+
     review = ReviewResult(
         submission_id=submission.id,
         time_complexity=review_data["time_complexity"],
         space_complexity=review_data["space_complexity"],
+        measured_complexity=empirical_fit,
+        complexity_disagreement=has_disagreement,
+        complexity_warning=warning_msg,
         concepts=review_data["concepts"],
         suggestions=review_data["suggestions"],
         better_approach=review_data["better_approach"],
@@ -80,6 +101,7 @@ async def submit_code(
     )
     db.add(review)
     await db.commit()
+
     try:
         from app.weakness.service import process_review_for_weaknesses
         await process_review_for_weaknesses(db, submission.id, current_user.id)
