@@ -122,7 +122,24 @@ async def untrack_contest(
         )
     )
     track = result.scalar_one_or_none()
-    if not track:
-        raise HTTPException(status_code=404, detail="Not tracking this contest")
     await db.delete(track)
     await db.commit()
+
+
+from app.contests.warmup import generate_warmup_ladder
+from app.weakness.resurface import get_active_weaknesses
+
+@router.get("/warmup")
+async def get_warmup_ladder(
+    company: str = "meta",
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    active_records = await get_active_weaknesses(db, current_user.id)
+    user_weaknesses = []
+    for r in active_records:
+        if hasattr(r, "concept_tag") and r.concept_tag:
+            user_weaknesses.append(r.concept_tag.canonical_name)
+
+    ladder = generate_warmup_ladder(company=company, user_weaknesses=user_weaknesses)
+    return {"company": company, "ladder": ladder}

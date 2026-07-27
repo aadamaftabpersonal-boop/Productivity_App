@@ -112,9 +112,17 @@ Replaced fixed 24-hour resurfacing cooldowns with an FSRS-inspired dynamic stabi
 
 **Regression test**: `tests/test_resurface_decay.py`.
 
+### ISSUE-014: Company-style warm-up ladder generator implemented
+**Status: Fixed**
+
+Implemented `app/contests/warmup.py` to generate custom 3-step warm-up problem sequences (Meta, Amazon, Google, Uber) matching company topic distributions against the user's active weakness profile. Rendered in `Dashboard.jsx`.
+
+**Regression test**: `tests/test_warmup_ladder.py`.
+
 ## Open
 
 *(No open issues remaining in Phase 0 queue.)*
+
 
 
 

@@ -18,6 +18,16 @@ export default function Dashboard() {
   const [timerSeconds, setTimerSeconds] = useState(1800);
   const [timerRunning, setTimerRunning] = useState(false);
 
+  const [selectedCompany, setSelectedCompany] = useState("meta");
+  const [warmupLadder, setWarmupLadder] = useState([]);
+
+  const handleFetchWarmup = (company) => {
+    setSelectedCompany(company);
+    client.get(`/contests/warmup?company=${company}`)
+      .then((res) => setWarmupLadder(res.data.ladder || []))
+      .catch(() => {});
+  };
+
   const loadData = () => {
     client.get("/dashboard")
       .then((res) => setData(res.data))
@@ -26,7 +36,10 @@ export default function Dashboard() {
     client.get("/weakness/analytics")
       .then((res) => setAnalytics(res.data))
       .catch(() => console.error("Analytics fetch failed"));
+
+    handleFetchWarmup("meta");
   };
+
 
   useEffect(() => {
     loadData();
@@ -259,6 +272,58 @@ export default function Dashboard() {
             )}
           </div>
 
+          {/* Company-Style Pre-Mock Warm-Up Ladder Widget */}
+          <div className="saas-card p-6 border-violet-500/30">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+              <div>
+                <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+                  <Zap size={18} className="text-violet-400" /> Pre-Mock Company Warm-Up Ladder
+                </h2>
+                <p className="text-xs text-slate-400">Company-specific topic distribution aligned to your active weaknesses</p>
+              </div>
+
+              {/* Company Selector Buttons */}
+              <div className="bg-slate-950 p-1.5 rounded-xl border border-slate-800 flex gap-1">
+                {["meta", "amazon", "google", "uber"].map((comp) => (
+                  <button
+                    key={comp}
+                    onClick={() => handleFetchWarmup(comp)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold uppercase transition ${
+                      selectedCompany === comp
+                        ? "bg-violet-600 text-white"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    {comp}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {warmupLadder.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {warmupLadder.map((prob) => (
+                  <a
+                    key={prob.step}
+                    href={prob.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-violet-500/50 transition space-y-1 block"
+                  >
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-400 font-mono">Step #{prob.step}</span>
+                      <span className={`badge ${prob.difficulty === "Easy" ? "badge-emerald" : prob.difficulty === "Medium" ? "badge-amber" : "badge-rose"}`}>
+                        {prob.difficulty}
+                      </span>
+                    </div>
+                    <div className="font-bold text-sm text-slate-100 truncate">{prob.title}</div>
+                    <div className="text-[10px] text-cyan-400 font-mono">{prob.concept} • {prob.target_time_minutes}m limit</div>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Active Weakness Flags List */}
           <div className="saas-card p-6">
             <h2 className="text-lg font-bold text-white mb-4 font-heading flex items-center gap-2">
@@ -277,6 +342,7 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+
         </div>
       </div>
 
