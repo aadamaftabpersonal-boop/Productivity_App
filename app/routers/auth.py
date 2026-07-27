@@ -31,7 +31,7 @@ async def issue_token_pair(db: AsyncSession, user: User) -> TokenPair:
     db.add(RefreshToken(jti=jti, user_id=user.id, expires_at=expires_at))
     await db.commit()
 
-    return TokenPair(access_token=access, refresh_token=refresh)
+    return TokenPair(access_token=access, refresh_token=refresh, user=UserOut.model_validate(user))
 
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
@@ -97,8 +97,10 @@ async def refresh_token(request: Request, payload: RefreshRequest, db: AsyncSess
         await db.commit()
         raise HTTPException(status_code=401, detail="Token reuse detected, all sessions revoked")
 
-    if stored.expires_at < datetime.now(timezone.utc):
+    exp_at = stored.expires_at.replace(tzinfo=timezone.utc) if stored.expires_at.tzinfo is None else stored.expires_at
+    if exp_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=401, detail="Refresh token expired")
+
 
     user_result = await db.execute(select(User).where(User.id == user_id))
     user = user_result.scalar_one_or_none()
