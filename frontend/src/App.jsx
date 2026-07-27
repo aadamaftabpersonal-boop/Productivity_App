@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Reviewer from "./pages/Reviewer";
 import Contests from "./pages/Contests";
 import Weakness from "./pages/Weakness";
+import Leaderboard from "./pages/Leaderboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -16,9 +17,11 @@ function App() {
       <Route path="/reviewer" element={<ProtectedRoute><Reviewer /></ProtectedRoute>} />
       <Route path="/contests" element={<ProtectedRoute><Contests /></ProtectedRoute>} />
       <Route path="/weakness" element={<ProtectedRoute><Weakness /></ProtectedRoute>} />
+      <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
+
 
 export default App;

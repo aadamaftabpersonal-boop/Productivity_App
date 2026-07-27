@@ -7,7 +7,9 @@ const links = [
   { to: "/reviewer", label: "Reviewer", icon: Code2 },
   { to: "/contests", label: "Contests", icon: Trophy },
   { to: "/weakness", label: "Weakness", icon: Target },
+  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
+
 
 export default function Layout({ children }) {
   const { logout } = useAuth();

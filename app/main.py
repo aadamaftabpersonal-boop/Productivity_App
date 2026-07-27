@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.routers import auth, reviewer, contests, weakness, dashboard, analytics
+from app.routers import auth, reviewer, contests, weakness, dashboard, analytics, leaderboard
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -29,6 +29,7 @@ app.include_router(contests.router)
 app.include_router(weakness.router)
 app.include_router(dashboard.router)
 app.include_router(analytics.router)
+app.include_router(leaderboard.router)
 
 
 

@@ -4,7 +4,9 @@ import Layout from "../components/Layout";
 import RatingBadge from "../components/RatingBadge";
 import CodeEditor from "../components/CodeEditor";
 import DiffViewer from "../components/DiffViewer";
+import AstVisualizer from "../components/AstVisualizer";
 import { AlertTriangle, CheckCircle, RefreshCw } from "lucide-react";
+
 
 export default function Reviewer() {
   const [form, setForm] = useState({ language: "python", code: "", domain: "cp", problem_title: "" });
@@ -222,6 +224,9 @@ export default function Reviewer() {
 
               {/* AI Unified Git Diff */}
               <DiffViewer diffText={selected.review.code_diff || "--- original.py\n+++ optimal_refactored.py\n@@ -1 +1 @@\n# Refactoring diff auto-generated for optimal O(N) submission"} />
+
+              {/* Interactive AST Visualizer */}
+              <AstVisualizer code={selected.code} />
             </div>
           )}
         </div>
