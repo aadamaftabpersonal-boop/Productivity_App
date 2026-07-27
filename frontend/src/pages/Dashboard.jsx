@@ -14,8 +14,6 @@ export default function Dashboard() {
   const [cfModalOpen, setCfModalOpen] = useState(false);
   const [lcModalOpen, setLcModalOpen] = useState(false);
 
-
-
   // Virtual Contest Rep Timer
   const [timerSeconds, setTimerSeconds] = useState(1800);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -93,69 +91,72 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      {/* SaaS Hero Welcome Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 p-8 saas-card relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-cyan-500/10 to-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+      {/* SaaS Hero Welcome Banner */}
+      <div className="saas-card p-8 mb-8 relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-96 h-96 bg-gradient-to-br from-cyan-500/10 to-violet-600/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="badge badge-cyan">
-              <Zap size={13} /> Empirical Diagnostic Engine Active
-            </span>
-            <span className="text-xs text-slate-400 font-mono">Domain: {activeDomain.toUpperCase()}</span>
-          </div>
-          <h1 className="text-4xl font-extrabold text-white tracking-tight font-heading">
-            Welcome, {data.user.full_name || "Developer"}
-          </h1>
-          <p className="text-slate-400 text-sm mt-1 max-w-xl">
-            Longitudinal weakness tracking, tree-sitter AST call-graph walking, and empirical subprocess sandbox benchmarking.
-          </p>
-        </div>
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative z-10">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="badge badge-cyan">
+                <Zap size={13} /> Empirical Diagnostic Engine
+              </span>
+              <span className="text-xs text-slate-400 font-mono">Domain: {activeDomain.toUpperCase()}</span>
+            </div>
 
-        <div className="flex flex-wrap items-center gap-3 relative z-10">
-          {/* Domain Pill Selector */}
-          <div className="bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800 flex gap-1">
-            {['cp', 'ml', 'swe'].map((dom) => (
-              <button
-                key={dom}
-                onClick={() => setActiveDomain(dom)}
-                className={`px-4 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all ${
-                  activeDomain === dom
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                {dom}
-              </button>
-            ))}
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-heading leading-tight mb-2">
+              Welcome back, {data.user.full_name || "Developer"}
+            </h1>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Longitudinal weakness tracking, tree-sitter AST call-graph walking, and empirical subprocess sandbox benchmarking.
+            </p>
           </div>
 
-          <button onClick={() => setCfModalOpen(true)} className="btn-primary">
-            <RefreshCw size={15} /> Sync Codeforces
-          </button>
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            {/* Domain Switcher */}
+            <div className="bg-slate-950/90 p-1.5 rounded-2xl border border-slate-800 flex gap-1">
+              {['cp', 'ml', 'swe'].map((dom) => (
+                <button
+                  key={dom}
+                  onClick={() => setActiveDomain(dom)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all ${
+                    activeDomain === dom
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {dom}
+                </button>
+              ))}
+            </div>
 
-          <button onClick={() => setLcModalOpen(true)} className="btn-primary bg-gradient-to-r from-amber-500 to-orange-600">
-            <RefreshCw size={15} /> Sync LeetCode
-          </button>
+            {/* Sync Action Buttons */}
+            <button onClick={() => setCfModalOpen(true)} className="btn-primary">
+              <RefreshCw size={14} /> Sync Codeforces
+            </button>
+            <button onClick={() => setLcModalOpen(true)} className="btn-primary bg-gradient-to-r from-amber-500 to-orange-600">
+              <RefreshCw size={14} /> Sync LeetCode
+            </button>
+          </div>
         </div>
       </div>
 
       {/* 4 Key SaaS Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-        <div className="saas-card p-6 border-cyan-500/20">
+        <div className="saas-card p-6 border-cyan-500/30">
           <div className="flex justify-between items-center text-slate-400 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider">Concept Mastery Index</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Mastery Index</span>
             <Activity size={18} className="text-cyan-400" />
           </div>
           <div className="text-3xl font-extrabold text-white font-mono">{avgMastery}%</div>
-          <div className="w-full bg-slate-900 h-2 rounded-full mt-3 overflow-hidden">
+          <div className="w-full bg-slate-950 h-2 rounded-full mt-3 overflow-hidden border border-slate-800">
             <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full" style={{ width: `${avgMastery}%` }} />
           </div>
         </div>
 
-        <div className="saas-card p-6 border-violet-500/20">
+        <div className="saas-card p-6 border-violet-500/30">
           <div className="flex justify-between items-center text-slate-400 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider">Resolution Velocity</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Resolution Velocity</span>
             <TrendingUp size={18} className="text-violet-400" />
           </div>
           <div className="text-3xl font-extrabold text-white font-mono">
@@ -166,9 +167,9 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="saas-card p-6 border-emerald-500/20">
+        <div className="saas-card p-6 border-emerald-500/30">
           <div className="flex justify-between items-center text-slate-400 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider">Sandbox Benchmarks</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Sandbox Runs</span>
             <Cpu size={18} className="text-emerald-400" />
           </div>
           <div className="text-3xl font-extrabold text-white font-mono">
@@ -177,9 +178,9 @@ export default function Dashboard() {
           <p className="text-xs text-emerald-400 mt-3 font-semibold">100% Subprocess Isolated</p>
         </div>
 
-        <div className="saas-card p-6 border-amber-500/20">
+        <div className="saas-card p-6 border-amber-500/30">
           <div className="flex justify-between items-center text-slate-400 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider">Active Weakness Flags</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Active Weakness Flags</span>
             <Target size={18} className="text-amber-400" />
           </div>
           <div className="text-3xl font-extrabold text-white font-mono">
@@ -189,15 +190,15 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Main Grid: Radar Chart & Contest Widget */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-1">
+      {/* Main Workspace Grid: Radar & Virtual Rep */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        <div className="lg:col-span-5">
           <WeaknessRadar masteryData={analytics?.mastery_radar || []} />
         </div>
 
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-7 space-y-6">
           {/* Virtual Practice Contest Widget */}
-          <div className="saas-card p-6 border-cyan-500/20 relative overflow-hidden">
+          <div className="saas-card p-6 border-cyan-500/30">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-white font-heading flex items-center gap-2">
                 <Trophy className="text-cyan-400" size={22} /> Virtual Practice Rep
@@ -214,7 +215,7 @@ export default function Dashboard() {
 
             {data.resurface_item ? (
               <div className="space-y-4">
-                <p className="text-slate-300 text-sm">{data.resurface_item.instruction}</p>
+                <p className="text-slate-300 text-sm leading-relaxed">{data.resurface_item.instruction}</p>
 
                 {data.resurface_item.url && (
                   <a

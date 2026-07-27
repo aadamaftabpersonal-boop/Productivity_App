@@ -3,20 +3,18 @@ import React from 'react';
 export default function WeaknessRadar({ masteryData }) {
   if (!masteryData || masteryData.length === 0) {
     return (
-      <div className="glass-card p-6 text-center text-slate-400">
+      <div className="saas-card p-6 text-center text-slate-400 font-mono text-sm">
         No concept mastery data recorded yet.
       </div>
     );
   }
 
-  // Pick top 6-8 concepts for clean radar representation
   const radarPoints = masteryData.slice(0, 7);
   const total = radarPoints.length;
 
-  const center = 150;
-  const radius = 100;
+  const center = 175;
+  const radius = 105;
 
-  // Calculate polygon vertex coordinates for radar grid
   const getCoordinates = (index, valuePct) => {
     const angle = (Math.PI * 2 / total) * index - Math.PI / 2;
     const currentRadius = (valuePct / 100) * radius;
@@ -25,7 +23,6 @@ export default function WeaknessRadar({ masteryData }) {
     return { x, y };
   };
 
-  // Build SVG polygon points string for user mastery
   const userPolygonPoints = radarPoints
     .map((item, idx) => {
       const { x, y } = getCoordinates(idx, item.mastery_percent);
@@ -33,22 +30,20 @@ export default function WeaknessRadar({ masteryData }) {
     })
     .join(' ');
 
-  // Grid levels (25%, 50%, 75%, 100%)
   const gridLevels = [0.25, 0.5, 0.75, 1.0];
 
   return (
-    <div className="glass-card p-6 flex flex-col items-center">
-      <div className="flex justify-between items-center w-full mb-4">
-        <div>
-          <h3 className="text-xl font-bold text-white tracking-wide">Weakness Mastery Radar</h3>
-          <p className="text-sm text-slate-400">Longitudinal Concept Strength (0-100%)</p>
+    <div className="saas-card p-6 flex flex-col items-center border-cyan-500/20">
+      <div className="w-full border-b border-slate-800 pb-4 mb-4">
+        <div className="flex justify-between items-center mb-1">
+          <h3 className="text-lg font-bold text-white font-heading">Weakness Mastery Radar</h3>
+          <span className="badge badge-cyan">AST Grounded</span>
         </div>
-        <span className="badge badge-cyan">AST & Performance Grounded</span>
+        <p className="text-xs text-slate-400">Longitudinal Concept Strength (0-100%)</p>
       </div>
 
-      <div className="relative w-[300px] h-[300px] flex justify-center items-center">
-        <svg width="300" height="300" className="overflow-visible">
-          {/* Background Grid Hexagons */}
+      <div className="relative w-full max-w-[350px] aspect-square flex justify-center items-center py-2">
+        <svg viewBox="0 0 350 350" className="w-full h-full overflow-visible">
           {gridLevels.map((lvl, lIdx) => {
             const levelPoints = radarPoints
               .map((_, idx) => {
@@ -67,7 +62,6 @@ export default function WeaknessRadar({ masteryData }) {
             );
           })}
 
-          {/* Axis Spoke Lines */}
           {radarPoints.map((_, idx) => {
             const { x, y } = getCoordinates(idx, 100);
             return (
@@ -83,36 +77,30 @@ export default function WeaknessRadar({ masteryData }) {
             );
           })}
 
-          {/* User Mastery Polygon Area */}
           <polygon
             points={userPolygonPoints}
-            fill="rgba(6, 182, 212, 0.25)"
+            fill="rgba(6, 182, 212, 0.2)"
             stroke="#06B6D4"
             strokeWidth="2.5"
-            className="transition-all duration-500 ease-out"
           />
 
-          {/* Radar Category Labels and Vertex Dots */}
           {radarPoints.map((item, idx) => {
             const { x, y } = getCoordinates(idx, item.mastery_percent);
-            const labelPos = getCoordinates(idx, 118);
+            const labelPos = getCoordinates(idx, 132);
 
             return (
               <g key={idx}>
-                {/* Glowing Vertex Point */}
                 <circle
                   cx={x}
                   cy={y}
                   r="4"
                   fill="#06B6D4"
-                  className="filter drop-shadow-[0_0_8px_#06B6D4]"
                 />
-                {/* Concept Label */}
                 <text
                   x={labelPos.x}
                   y={labelPos.y}
-                  fill="#94A3B8"
-                  fontSize="11"
+                  fill="#cbd5e1"
+                  fontSize="10"
                   fontFamily="Inter, sans-serif"
                   fontWeight="600"
                   textAnchor="middle"
