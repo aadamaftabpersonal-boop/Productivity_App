@@ -2,10 +2,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models import ConceptTag
 
+from app.weakness.taxonomy import CONCEPT_SEED_DATA
+
+
 async def load_concept_index(db: AsyncSession) -> dict[str, ConceptTag]:
     """alias/canonical_name (lowercased) -> ConceptTag, built once per call."""
     result = await db.execute(select(ConceptTag))
     tags = result.scalars().all()
+
+    if not tags:
+        for entry in CONCEPT_SEED_DATA:
+            tag = ConceptTag(**entry)
+            db.add(tag)
+        await db.commit()
+        result = await db.execute(select(ConceptTag))
+        tags = result.scalars().all()
 
     index = {}
     for tag in tags:
@@ -14,6 +25,7 @@ async def load_concept_index(db: AsyncSession) -> dict[str, ConceptTag]:
         for alias in tag.aliases:
             index[alias.lower()] = tag
     return index
+
 
 
 def match_text_to_concept(text: str, index: dict[str, ConceptTag]) -> ConceptTag | None:

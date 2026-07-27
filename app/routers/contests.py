@@ -12,11 +12,32 @@ from app.routers.reviewer import get_current_user  # reuse auth dependency
 router = APIRouter(prefix="/contests", tags=["contests"])
 
 
+from app.contests.codeforces_import import import_codeforces_history
+from pydantic import BaseModel
+
+class CodeforcesImportRequest(BaseModel):
+    handle: str
+    count: int = 50
+
 @router.post("/sync", status_code=status.HTTP_200_OK)
 async def trigger_sync(db: AsyncSession = Depends(get_db)):
     """Manually trigger a refresh. In prod, call this from a cron/scheduled job instead."""
     result = await sync_contests(db)
     return result
+
+
+@router.post("/import/codeforces", status_code=status.HTTP_200_OK)
+async def import_cf_user_history(
+    payload: CodeforcesImportRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        res = await import_codeforces_history(db, current_user.id, payload.handle, payload.count)
+        return res
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 
 @router.get("/upcoming", response_model=list[ContestOut])

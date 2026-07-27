@@ -33,6 +33,15 @@ async def list_active_weaknesses(
     ]
 
 
+from app.weakness.resurface import get_resurface_item, record_resurface_result
+from pydantic import BaseModel
+
+class CompleteResurfaceRequest(BaseModel):
+    concept_tag_id: str
+    success: bool
+    time_taken_seconds: int = 0
+
+
 @router.get("/resurface", response_model=ResurfaceOut)
 async def resurface(
     db: AsyncSession = Depends(get_db),
@@ -42,3 +51,17 @@ async def resurface(
     if not item:
         raise HTTPException(status_code=404, detail="No weakness to resurface right now — either no active weaknesses, or all are in cooldown")
     return item
+
+
+@router.post("/resurface/complete")
+async def complete_resurface_item(
+    payload: CompleteResurfaceRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    res = await record_resurface_result(
+        db, current_user.id, payload.concept_tag_id, payload.success, payload.time_taken_seconds
+    )
+    if "error" in res:
+        raise HTTPException(status_code=404, detail=res["error"])
+    return res

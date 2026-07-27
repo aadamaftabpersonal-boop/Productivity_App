@@ -82,12 +82,53 @@ async def get_resurface_item(db: AsyncSession, user_id) -> dict | None:
         return None
     problem = random.choice(bank)
     item = {
-        "mode": "fresh_problem",
+        "mode": mode,
         "concept": concept_tag.display_name,
-        "problem_title": problem["title"],
-        "url": problem["url"],
-        "instruction": f"You've been flagged on {concept_tag.display_name} {weakness_record.gap_count} time(s). Try this problem to target it directly.",
+        "concept_tag_id": str(concept_tag.id),
+        "problem_title": old_submission.problem_title if mode == "own_submission" and old_submission else problem["title"],
+        "url": problem["url"] if mode == "fresh_problem" else None,
+        "submission_id": str(old_submission.id) if mode == "own_submission" and old_submission else None,
+        "instruction": f"Virtual Contest Rep: Target your weakness in {concept_tag.display_name}. 30-minute timer starts now!",
+        "time_limit_minutes": 30,
+        "initial_cf_points": 500,
     }
     weakness_record.last_resurfaced_at = now
     await db.commit()
     return item
+
+
+async def record_resurface_result(
+    db: AsyncSession, user_id, concept_tag_id, success: bool, time_taken_seconds: int = 0
+) -> dict:
+    """Decay-on-success logic (closes 5.4).
+    If user passes resurfaced practice item, decay gap_count by 1. If gap_count falls below threshold, deactivate.
+    If failed, increment gap_count. Return Codeforces-style score."""
+    result = await db.execute(
+        select(WeaknessRecord).where(
+            WeaknessRecord.user_id == user_id,
+            WeaknessRecord.concept_tag_id == concept_tag_id,
+        )
+    )
+    record = result.scalar_one_or_none()
+    if not record:
+        return {"error": "Weakness record not found"}
+
+    if success:
+        record.gap_count = max(0, record.gap_count - 1)
+        if record.gap_count < 2:
+            record.is_active_weakness = False
+        points_earned = max(100, 500 - int(time_taken_seconds / 60) * 2)
+    else:
+        record.gap_count += 1
+        record.is_active_weakness = True
+        points_earned = 0
+
+    record.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+
+    return {
+        "success": success,
+        "new_gap_count": record.gap_count,
+        "is_active_weakness": record.is_active_weakness,
+        "cf_points_earned": points_earned,
+    }
