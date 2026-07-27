@@ -73,15 +73,32 @@ export default function Reviewer() {
     setActiveTab("summary");
   };
 
+  const handleSeedDemoData = async () => {
+    setSubmitting(true);
+    try {
+      await client.post("/reviewer/seed-demo-data");
+      loadHistory();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <Layout>
       {/* Header Bar */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-extrabold text-white font-heading">AST Code Reviewer Suite</h1>
           <p className="text-slate-400 text-sm mt-0.5">Tree-sitter scope-aware call graphs, empirical curve fitting & boundary corner fuzzing</p>
         </div>
+
+        <button onClick={handleSeedDemoData} disabled={submitting} className="btn-primary bg-gradient-to-r from-violet-600 to-indigo-600">
+          <Zap size={14} /> {submitting ? "Seeding Snippets..." : "Seed 15+ Demo Submissions"}
+        </button>
       </div>
+
 
       {/* Main 2-Column Split Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

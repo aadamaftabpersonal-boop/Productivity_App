@@ -131,6 +131,18 @@ async def submit_multi_file_project(
 
 
 
+from app.reviewer.demo_seeder import seed_demo_submissions_for_user
+
+@router.post("/seed-demo-data", status_code=status.HTTP_200_OK)
+async def seed_demo_data(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Seeds 15+ realistic bad code submissions into the database for live demonstration & stress testing."""
+    res = await seed_demo_submissions_for_user(db, current_user.id)
+    return res
+
+
 @router.get("/history", response_model=list[SubmissionOut])
 async def get_history(
     db: AsyncSession = Depends(get_db),
@@ -159,4 +171,4 @@ async def get_submission(
     submission = result.scalar_one_or_none()
     if not submission:
         raise HTTPException(status_code=404, detail="Submission not found")
-    return submission
+    return submission
