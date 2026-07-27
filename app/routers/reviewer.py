@@ -215,4 +215,24 @@ async def get_submission_hints(
         review_data=review_data,
         unlocked_tier=tier,
     )
+
+
+from app.reviewer.tracer import trace_python_execution
+
+
+class TraceRequest(BaseModel):
+    code: str
+    language: str = "python"
+
+@router.post("/trace")
+async def run_dry_run_trace(
+    payload: TraceRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """Runs a sandboxed dry-run trace over Python code and returns line execution steps."""
+    if payload.language.lower() != "python":
+        raise HTTPException(status_code=400, detail="Dry-run tracer currently supports Python code.")
+    steps = trace_python_execution(payload.code)
+    return {"steps": steps, "total_steps": len(steps)}
+
 

@@ -4,7 +4,9 @@ import Layout from "../components/Layout";
 import CodeEditor from "../components/CodeEditor";
 import DiffViewer from "../components/DiffViewer";
 import AstVisualizer from "../components/AstVisualizer";
+import TraceTable from "../components/TraceTable";
 import { AlertTriangle, CheckCircle, RefreshCw, Code2, GitBranch, Zap, Play, Terminal, Layers, BookOpen, AlertCircle, ExternalLink } from "lucide-react";
+
 
 
 export default function Reviewer() {
@@ -274,7 +276,19 @@ export default function Reviewer() {
                   >
                     Fuzzer Suite
                   </button>
+
+                  <button
+                    onClick={() => setActiveTab("tracer")}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold uppercase transition ${
+                      activeTab === "tracer"
+                        ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/30"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    Dry-Run Tracer
+                  </button>
                 </div>
+
 
                 {/* Tab 1: Diagnostic Summary & RAG Tutorial */}
                 {activeTab === "summary" && (
@@ -463,11 +477,13 @@ export default function Reviewer() {
                           <div className="text-[11px] text-slate-400">Result: <span className="text-emerald-400">{item.output}</span> (Expected: {item.expected})</div>
                         </div>
                       ))}
-                    </div>
-                  </div>
+                {/* Tab 5: Visual Dry-Run Tracer */}
+                {activeTab === "tracer" && (
+                  <TraceTable code={selected?.code || form.code} language={form.language} api={client} />
                 )}
               </div>
             )}
+
           </div>
         </div>
       </div>

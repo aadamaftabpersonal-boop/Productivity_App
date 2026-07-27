@@ -98,9 +98,17 @@ Implemented `app/reviewer/hints.py` to gate hints in 3 progressive tiers (Tier 1
 
 **Regression test**: `tests/test_hints.py`.
 
+### ISSUE-012: Sandboxed Python dry-run tracer added with 200-step cap
+**Status: Fixed**
+
+Implemented `app/reviewer/tracer.py` using `sys.settrace` inside the existing subprocess sandbox harness. Records line-by-line variable state snapshots capped at 200 steps with a 2.0s hard timeout. Rendered visually via `TraceTable.jsx` in the AST Reviewer suite.
+
+**Regression test**: `tests/test_tracer.py`.
+
 ## Open
 
 *(No open issues remaining in Phase 0 queue.)*
+
 
 
 
