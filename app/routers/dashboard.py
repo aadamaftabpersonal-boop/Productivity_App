@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from datetime import datetime, timezone, timedelta
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -8,8 +10,29 @@ from app.models import User, CodeSubmission, WeaknessRecord, ConceptTag, Contest
 from app.schemas import DashboardOut, UserOut, ActiveWeaknessOut
 from app.routers.reviewer import get_current_user
 from app.weakness.resurface import get_resurface_item
+from app.services.notifications import send_discord_resurface_ping
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
+
+
+class DiscordWebhookRequest(BaseModel):
+    webhook_url: str
+
+
+def calculate_streak(submissions: list[CodeSubmission]) -> int:
+    if not submissions:
+        return 1
+    dates = sorted(set(s.created_at.date() for s in submissions), reverse=True)
+    today = datetime.now(timezone.utc).date()
+    streak = 0
+    curr = today
+    for d in dates:
+        if d == curr or d == curr - timedelta(days=1):
+            streak += 1
+            curr = d
+        else:
+            break
+    return max(1, streak)
 
 
 @router.get("", response_model=DashboardOut)
@@ -17,15 +40,17 @@ async def get_dashboard(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # recent submissions (last 5)
+    # recent submissions (last 100 for streak calculation)
     sub_result = await db.execute(
         select(CodeSubmission)
         .options(selectinload(CodeSubmission.review))
         .where(CodeSubmission.user_id == current_user.id)
         .order_by(CodeSubmission.created_at.desc())
-        .limit(5)
+        .limit(100)
     )
-    recent_submissions = sub_result.scalars().all()
+    all_submissions = sub_result.scalars().all()
+    recent_submissions = all_submissions[:5]
+    streak_days = calculate_streak(all_submissions)
 
     # active weaknesses
     weakness_result = await db.execute(
@@ -39,10 +64,10 @@ async def get_dashboard(
         for wr, ct in weakness_result.all()
     ]
 
-    # resurface item (may be None if nothing eligible — that's expected, not an error)
+    # resurface item
     resurface_item = await get_resurface_item(db, current_user.id)
 
-    # upcoming contests (next 10)
+    # upcoming contests
     upcoming_result = await db.execute(
         select(Contest)
         .where(Contest.is_finished == False)
@@ -62,9 +87,27 @@ async def get_dashboard(
 
     return DashboardOut(
         user=UserOut.model_validate(current_user),
+        streak_days=streak_days,
         recent_submissions=recent_submissions,
         active_weaknesses=active_weaknesses,
         resurface_item=resurface_item,
         upcoming_contests=upcoming_contests,
         tracked_contests=tracked_contests,
     )
+
+
+@router.post("/discord-webhook", status_code=status.HTTP_200_OK)
+async def update_discord_webhook(
+    payload: DiscordWebhookRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    current_user.discord_webhook_url = payload.webhook_url
+    await db.commit()
+    # Trigger test ping
+    sent = await send_discord_resurface_ping(
+        webhook_url=payload.webhook_url,
+        user_name=current_user.full_name or "Developer",
+        active_weaknesses=[{"concept": "Sliding Window"}, {"concept": "Two Pointers"}],
+    )
+    return {"message": "Discord Webhook saved successfully", "test_ping_sent": sent}

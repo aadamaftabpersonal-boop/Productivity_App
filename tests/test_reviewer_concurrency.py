@@ -91,7 +91,8 @@ async def test_event_loop_not_blocked_during_review(registered_user, monkeypatch
             "concepts": [], "suggestions": [], "better_approach": "x", "score": 90,
         }
 
-    monkeypatch.setattr(reviewer_router, "get_review", _fake_slow_get_review)
+    import app.domains.cp as cp_domain
+    monkeypatch.setattr(cp_domain, "get_review", _fake_slow_get_review)
 
     _, _, tokens = registered_user
     headers = {"Authorization": f"Bearer {tokens['access_token']}"}

@@ -5,7 +5,9 @@ import CodeEditor from "../components/CodeEditor";
 import DiffViewer from "../components/DiffViewer";
 import AstVisualizer from "../components/AstVisualizer";
 import TraceTable from "../components/TraceTable";
-import { AlertTriangle, CheckCircle, RefreshCw, Code2, GitBranch, Zap, Play, Terminal, Layers, BookOpen, AlertCircle, ExternalLink } from "lucide-react";
+import CalibrationModal from "../components/CalibrationModal";
+import { AlertTriangle, CheckCircle, RefreshCw, Code2, GitBranch, Zap, Play, Terminal, Layers, BookOpen, AlertCircle, ExternalLink, Target } from "lucide-react";
+
 
 
 
@@ -43,7 +45,9 @@ export default function Reviewer() {
     }, 1000);
   };
 
-  const handleSubmit = async (e) => {
+  const [calibrationModalOpen, setCalibrationModalOpen] = useState(false);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.code.trim()) return;
 
@@ -52,10 +56,16 @@ export default function Reviewer() {
       return;
     }
 
+    setCalibrationModalOpen(true);
+  };
+
+  const handleConfirmSubmissionWithCalibration = async (calibrationData) => {
+    setCalibrationModalOpen(false);
     setSubmitting(true);
     setError(null);
     try {
-      const { data } = await client.post("/reviewer/submit", form);
+      const payload = { ...form, ...calibrationData };
+      const { data } = await client.post("/reviewer/submit", payload);
       if (data.job_id) {
         pollJobStatus(data.job_id);
       }
@@ -65,6 +75,7 @@ export default function Reviewer() {
       setSubmitting(false);
     }
   };
+
 
   const handleSelectHistoryItem = (item) => {
     setSelected(item);
@@ -493,6 +504,12 @@ export default function Reviewer() {
           </div>
         </div>
       </div>
+
+      <CalibrationModal
+        isOpen={calibrationModalOpen}
+        onSubmitCalibration={handleConfirmSubmissionWithCalibration}
+        onClose={() => setCalibrationModalOpen(false)}
+      />
     </Layout>
   );
 }

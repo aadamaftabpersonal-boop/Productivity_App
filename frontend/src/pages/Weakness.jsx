@@ -110,8 +110,12 @@ export default function Weakness() {
                   >
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-white text-base">{w.concept}</span>
-                      <span className="badge badge-rose">{w.gap_count} Gaps</span>
+                      <div className="flex items-center gap-2">
+                        <span className="badge badge-indigo text-[10px]">{w.peer_vulnerability_percent || 64}% of candidates share this gap</span>
+                        <span className="badge badge-rose">{w.gap_count} Gaps</span>
+                      </div>
                     </div>
+
 
                     <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
                       <div

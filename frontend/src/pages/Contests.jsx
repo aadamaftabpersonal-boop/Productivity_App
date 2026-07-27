@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import client from "../api/client";
 import Layout from "../components/Layout";
-import ContestCalendar from "../components/ContestCalendar";
-import { Trophy, RefreshCw, ExternalLink, Bookmark, Calendar as CalendarIcon, List } from "lucide-react";
+import PostMortemModal from "../components/PostMortemModal";
+import { Trophy, RefreshCw, ExternalLink, Bookmark, Calendar as CalendarIcon, List, FileText } from "lucide-react";
 
 const PLATFORM_BADGE = {
   codeforces: "badge-cyan",
@@ -14,11 +14,24 @@ export default function Contests() {
   const [tracked, setTracked] = useState([]);
   const [syncing, setSyncing] = useState(false);
   const [viewMode, setViewMode] = useState("calendar"); // "calendar" | "list"
+  const [selectedPm, setSelectedPm] = useState(null);
+  const [pmModalOpen, setPmModalOpen] = useState(false);
 
   const load = () => {
     client.get("/contests/upcoming").then((res) => setUpcoming(res.data)).catch(() => {});
     client.get("/contests/tracked").then((res) => setTracked(res.data)).catch(() => {});
   };
+
+  const handleFetchPostMortem = async (contestId) => {
+    try {
+      const res = await client.get(`/contests/${contestId}/post-mortem`);
+      setSelectedPm(res.data);
+      setPmModalOpen(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
   useEffect(() => { load(); }, []);
 
@@ -118,6 +131,13 @@ export default function Contests() {
                     </span>
 
                     <button
+                      onClick={() => handleFetchPostMortem(c.id)}
+                      className="btn-primary text-xs py-1.5 px-3 bg-gradient-to-r from-amber-500 to-orange-600"
+                    >
+                      <FileText size={14} /> Post-Mortem
+                    </button>
+
+                    <button
                       onClick={() => (trackedIds.has(c.id) ? untrack(c.id) : track(c.id))}
                       className={`btn-secondary text-xs py-1.5 px-3.5 ${
                         trackedIds.has(c.id) ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : ""
@@ -133,6 +153,12 @@ export default function Contests() {
           )}
         </div>
       )}
+
+      <PostMortemModal
+        isOpen={pmModalOpen}
+        postMortem={selectedPm}
+        onClose={() => setPmModalOpen(false)}
+      />
     </Layout>
   );
 }

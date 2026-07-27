@@ -22,6 +22,7 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(255), nullable=True)
     role: Mapped[str] = mapped_column(String(50), default="student", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    discord_webhook_url: Mapped[str] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
@@ -56,7 +57,10 @@ class CodeSubmission(Base):
     problem_title: Mapped[str] = mapped_column(String(255), nullable=True)
     problem_statement: Mapped[str] = mapped_column(Text, nullable=True)
     code: Mapped[str] = mapped_column(Text, nullable=False)
+    user_predicted_complexity: Mapped[str] = mapped_column(String(50), nullable=True)
+    confidence_level: Mapped[str] = mapped_column(String(50), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
 
     review: Mapped["ReviewResult"] = relationship(back_populates="submission", uselist=False, cascade="all, delete-orphan")
 
@@ -149,4 +153,20 @@ class WeaknessRecord(Base):
     last_flagged_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     last_resurfaced_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     is_active_weakness: Mapped[bool] = mapped_column(Boolean, default=False)  # crosses recurrence threshold
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class ContestPostMortem(Base):
+    """Auto-generated post-contest summary artifact."""
+    __tablename__ = "contest_post_mortems"
+    __table_args__ = (UniqueConstraint("user_id", "contest_id", name="uq_user_contest_postmortem"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    contest_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("contests.id", ondelete="CASCADE"), nullable=False)
+    solved_count: Mapped[int] = mapped_column(Integer, default=0)
+    failed_count: Mapped[int] = mapped_column(Integer, default=0)
+    concept_gaps: Mapped[list] = mapped_column(JSON, default=list)
+    rank_impact_narrative: Mapped[str] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+

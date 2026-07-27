@@ -4,7 +4,9 @@ import Layout from "../components/Layout";
 import WeaknessRadar from "../components/WeaknessRadar";
 import CodeforcesImportModal from "../components/CodeforcesImportModal";
 import LeetCodeImportModal from "../components/LeetCodeImportModal";
-import { Target, Trophy, Clock, CheckCircle, RefreshCw, Zap, TrendingUp, Cpu, Activity, ArrowUpRight } from "lucide-react";
+import ShareableReportModal from "../components/ShareableReportModal";
+import { Target, Trophy, Clock, CheckCircle, RefreshCw, Zap, TrendingUp, Cpu, Activity, ArrowUpRight, Award, Bell } from "lucide-react";
+
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -20,6 +22,10 @@ export default function Dashboard() {
 
   const [selectedCompany, setSelectedCompany] = useState("meta");
   const [warmupLadder, setWarmupLadder] = useState([]);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareReportData, setShareReportData] = useState(null);
+  const [discordUrl, setDiscordUrl] = useState("");
+  const [webhookSaved, setWebhookSaved] = useState(false);
 
   const handleFetchWarmup = (company) => {
     setSelectedCompany(company);
@@ -27,6 +33,29 @@ export default function Dashboard() {
       .then((res) => setWarmupLadder(res.data.ladder || []))
       .catch(() => {});
   };
+
+  const handleFetchShareableReport = async () => {
+    try {
+      const res = await client.get("/weakness/shareable-report");
+      setShareReportData(res.data);
+      setShareModalOpen(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveDiscordWebhook = async (e) => {
+    e.preventDefault();
+    if (!discordUrl) return;
+    try {
+      await client.post("/dashboard/discord-webhook", { webhook_url: discordUrl });
+      setWebhookSaved(true);
+      setTimeout(() => setWebhookSaved(false), 3000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
   const loadData = () => {
     client.get("/dashboard")
@@ -114,6 +143,9 @@ export default function Dashboard() {
               <span className="badge badge-cyan">
                 <Zap size={13} /> Empirical Diagnostic Engine
               </span>
+              <span className="badge badge-amber font-mono font-bold">
+                🔥 {data.streak_days || 1} Day Streak
+              </span>
               <span className="text-xs text-slate-400 font-mono">Domain: {activeDomain.toUpperCase()}</span>
             </div>
 
@@ -123,6 +155,7 @@ export default function Dashboard() {
             <p className="text-slate-300 text-sm leading-relaxed">
               Longitudinal weakness tracking, tree-sitter AST call-graph walking, and empirical subprocess sandbox benchmarking.
             </p>
+
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
@@ -151,6 +184,10 @@ export default function Dashboard() {
             <button onClick={() => setLcModalOpen(true)} className="btn-primary bg-gradient-to-r from-amber-500 to-orange-600">
               <RefreshCw size={14} /> Sync LeetCode
             </button>
+            <button onClick={handleFetchShareableReport} className="btn-primary bg-gradient-to-r from-violet-600 to-indigo-600">
+              <Award size={14} /> Share Progress Card
+            </button>
+
           </div>
         </div>
       </div>
@@ -341,8 +378,28 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
-          </div>
+          {/* Discord Webhook Resurfacing Pings Card */}
+          <div className="saas-card p-6 border-indigo-500/30">
+            <h2 className="text-lg font-bold text-white mb-2 font-heading flex items-center gap-2">
+              <Bell size={18} className="text-indigo-400" /> Discord Resurfacing Pings
+            </h2>
+            <p className="text-xs text-slate-400 mb-4">
+              Receive instant Discord channel notifications when spaced repetition concepts are due for resurfacing.
+            </p>
 
+            <form onSubmit={handleSaveDiscordWebhook} className="flex gap-2">
+              <input
+                type="url"
+                value={discordUrl}
+                onChange={(e) => setDiscordUrl(e.target.value)}
+                placeholder="https://discord.com/api/webhooks/..."
+                className="code-editor h-10 py-1 px-3 text-xs bg-slate-950 text-slate-200 border-slate-700 flex-1"
+              />
+              <button type="submit" className="btn-primary py-1 px-3 text-xs bg-indigo-600">
+                {webhookSaved ? "Saved & Ping Sent!" : "Save & Test Ping"}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
@@ -358,6 +415,12 @@ export default function Dashboard() {
         onClose={() => setLcModalOpen(false)}
         onImportSuccess={loadData}
         api={client}
+      />
+
+      <ShareableReportModal
+        isOpen={shareModalOpen}
+        report={shareReportData}
+        onClose={() => setShareModalOpen(false)}
       />
     </Layout>
   );

@@ -17,6 +17,7 @@ class UserOut(BaseModel):
     email: EmailStr
     full_name: str | None
     role: str
+    discord_webhook_url: str | None = None
     created_at: datetime
 
 class TokenPair(BaseModel):
@@ -33,6 +34,9 @@ class CodeReviewRequest(BaseModel):
     domain: str = "cp"  # "cp" | "ml" | "swe"
     problem_title: str | None = None
     problem_statement: str | None = None
+    user_predicted_complexity: str | None = None  # e.g. "O(N)", "O(N^2)"
+    confidence_level: str | None = None          # "high", "medium", "low"
+
 
 class SuggestionItem(BaseModel):
     issue: str
@@ -94,8 +98,9 @@ class ResurfaceOut(BaseModel):
 
 class DashboardOut(BaseModel):
     user: UserOut
+    streak_days: int = 1
     recent_submissions: list[SubmissionOut]
     active_weaknesses: list[ActiveWeaknessOut]
     resurface_item: ResurfaceOut | None
     upcoming_contests: list[ContestOut]
-    tracked_contests: list[ContestOut]
+    tracked_contests: list[ContestOut]

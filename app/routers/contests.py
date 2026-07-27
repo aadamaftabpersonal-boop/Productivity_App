@@ -142,4 +142,20 @@ async def get_warmup_ladder(
             user_weaknesses.append(r.concept_tag.canonical_name)
 
     ladder = generate_warmup_ladder(company=company, user_weaknesses=user_weaknesses)
-    return {"company": company, "ladder": ladder}
+    return {"company": company, "ladder": ladder}
+
+
+from app.contests.post_mortem import generate_post_mortem
+
+@router.get("/{contest_id}/post-mortem")
+async def get_contest_post_mortem(
+    contest_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        pm = await generate_post_mortem(db, str(current_user.id), contest_id)
+        return pm
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
