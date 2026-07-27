@@ -1,6 +1,10 @@
+import os
+os.environ["TESTING"] = "true"
+
 import asyncio
 import pytest
 import pytest_asyncio
+
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.pool import NullPool
@@ -16,6 +20,9 @@ db_module.AsyncSessionLocal = async_sessionmaker(
 
 from app.database import Base, engine
 from app.main import app
+
+app.state.limiter.enabled = False
+
 
 
 

@@ -14,11 +14,14 @@ from app.security import (
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+import os
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from fastapi import Request
 
-limiter = Limiter(key_func=get_remote_address)
+testing_mode = os.environ.get("TESTING", "false").lower() == "true"
+limiter = Limiter(key_func=get_remote_address, enabled=not testing_mode)
+
 
 
 async def issue_token_pair(db: AsyncSession, user: User) -> TokenPair:

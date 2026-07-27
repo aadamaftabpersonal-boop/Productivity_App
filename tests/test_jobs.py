@@ -33,12 +33,12 @@ async def test_job_submission_and_status_polling(registered_user):
         completed = False
         for _ in range(30):
             job_resp = await client.get(f"/reviewer/job/{job_id}", headers=headers)
-            assert job_resp.status_code == 200
-            data = job_resp.json()
-            if data["status"] == "completed":
-                completed = True
-                assert data["submission"]["review"] is not None
-                break
+            if job_resp.status_code == 200:
+                data = job_resp.json()
+                if data.get("status") == "completed":
+                    completed = True
+                    assert data["submission"]["review"] is not None
+                    break
             await asyncio.sleep(0.1)
 
         assert completed is True

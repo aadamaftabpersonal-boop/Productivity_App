@@ -102,8 +102,16 @@ async def get_job_status(
     if submission.review is None:
         return {"job_id": job_id, "status": "processing", "review": None}
 
+    return {
+        "job_id": job_id,
+        "status": "completed",
+        "submission": submission,
+    }
+
+
 from app.domains.multi_file import analyze_multi_file_project
 from pydantic import BaseModel
+
 
 class MultiFileProjectRequest(BaseModel):
     domain: str = "ml"  # "ml" | "swe"

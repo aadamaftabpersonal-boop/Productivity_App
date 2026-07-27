@@ -12,12 +12,14 @@ async def test_resurface_decay_on_success(registered_user):
     from app.database import AsyncSessionLocal
     from app.weakness.matcher import load_concept_index
     from app.models import WeaknessRecord
+    from app.security import decode_token
+    user_id_str = decode_token(tokens["access_token"])["sub"]
 
     # Manually create an active weakness with gap_count = 2
     async with AsyncSessionLocal() as db:
         index = await load_concept_index(db)
         tag = index["sliding_window"]
-        user_id = tokens["access_token"]  # get user via endpoint or direct insert
+        user_id = user_id_str
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         # Submit code that flags sliding_window twice to make active weakness
@@ -37,7 +39,7 @@ async def test_resurface_decay_on_success(registered_user):
             import asyncio
             for _ in range(20):
                 j = await client.get(f"/reviewer/job/{job_id}", headers=headers)
-                if j.json()["status"] == "completed":
+                if j.status_code == 200 and j.json().get("status") == "completed":
                     break
                 await asyncio.sleep(0.1)
 
