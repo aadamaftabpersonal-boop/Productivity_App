@@ -21,18 +21,24 @@ async def run_review_pipeline(submission_id: str) -> Optional[dict]:
         if not submission:
             return None
 
-        from app.reviewer.tree_analysis import analyze_structure
-        heuristics = analyze_structure(submission.code, submission.language)
+        from app.domains.registry import get_domain_analyzer
+
+        analyzer = get_domain_analyzer(submission.domain or "cp")
 
         try:
-            review_data = await get_review(
+            analysis_output = await analyzer.analyze(
                 code=submission.code,
                 language=submission.language,
-                heuristics=heuristics,
                 problem_title=submission.problem_title,
                 problem_statement=submission.problem_statement,
             )
+            heuristics = analysis_output["heuristics"]
+            review_data = analysis_output["review_data"]
+            empirical_fit = analysis_output["measured_complexity"]
+            has_disagreement = analysis_output["complexity_disagreement"]
+            warning_msg = analysis_output["complexity_warning"]
         except Exception as e:
+            heuristics = {}
             review_data = {
                 "time_complexity": "O(n)",
                 "space_complexity": "O(1)",
@@ -41,11 +47,10 @@ async def run_review_pipeline(submission_id: str) -> Optional[dict]:
                 "better_approach": f"Review generation failed: {str(e)}",
                 "score": 0,
             }
+            empirical_fit = "O(n)"
+            has_disagreement = False
+            warning_msg = None
 
-        empirical_fit, _ = measure_empirical_complexity(submission.code, submission.language)
-        has_disagreement, warning_msg = cross_check_complexity(
-            review_data.get("time_complexity"), empirical_fit
-        )
 
         review = ReviewResult(
             submission_id=submission.id,
