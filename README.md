@@ -26,11 +26,7 @@ for the full phased roadmap.
 
 ## Known, honestly-documented limitations (as of this commit)
 
-- The "AST-grounded" framing is partially aspirational: loop-nesting depth
-  and syntax-error detection are genuine structural AST use. Data-structure
-  detection is currently keyword-matching on identifier text, and recursion
-  detection is a substring count rather than a call-graph check. Both are
-  slated for a real structural rewrite (see roadmap).
+- AST structural analysis parses loop nesting depth, syntax validity, scope-aware call-graph recursion, and type/declaration/constructor nodes for data structures (Python, C++, Java).
 - Complexity claims in a review are currently LLM output with no independent
   verification. An empirical scaling-test cross-check is planned but not
   yet built.

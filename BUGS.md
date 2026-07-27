@@ -34,16 +34,14 @@ blocks. The working version uses an explicit cross-thread signal fired the
 instant execution enters the mocked call, so the "fast" concurrent request
 is guaranteed to be launched during the exact window that matters.
 
-## Open
+### ISSUE-002: Real AST call-graph recursion & node type inspection
+**Status: Fixed**
 
-### ISSUE-002: "AST-grounded" claim overstates what's structural
-`_detect_data_structures` in `app/reviewer/tree_analysis.py` is keyword
-matching on identifier text, not a structural check (e.g. type/declaration
-nodes). `_detect_recursion` is a substring count of the function name inside
-its own body text, with no call-graph or word-boundary check — it will
-misfire on a decoy identifier that happens to contain the function's name as
-a substring. Only loop-nesting depth and syntax-error detection are genuine
-structural AST use today.
+Replaced naive substring counting in `_detect_recursion` with scope-aware AST call-graph walking (extracting declared function names and matching `call` / `call_expression` / `method_invocation` callee identifiers). Replaced raw identifier keyword string matching in `_detect_data_structures` with AST type/declaration/constructor node inspection (`template_type` / `type_identifier` / `generic_type` / call nodes) across Python, C++, and Java. Decoy identifiers like `mapValue` or `solve_helper` no longer trigger false positive data structure hints or recursion flags.
+
+**Regression test**: `tests/test_tree_analysis.py`.
+
+## Open
 
 ### ISSUE-003: No independent verification of LLM complexity claims
 Everything the review reports about time/space complexity is the LLM's own
