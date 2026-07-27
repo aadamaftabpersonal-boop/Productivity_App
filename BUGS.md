@@ -84,9 +84,17 @@ Replaced ungrounded LLM review prompts with real in-memory RAG retrieval (`app/r
 
 **Regression test**: `tests/test_rag_retrieval.py`.
 
+### ISSUE-010: Instant pre-flight anti-bug checklist added to tree-sitter parser pipeline
+**Status: Fixed**
+
+Added `app/reviewer/preflight.py` to turn tree-sitter AST heuristics into instant pre-submission warnings (`integer_overflow_risk`, `fast_io_endl`, `fast_io_missing_sync`, `unbounded_recursion_risk`) in the synchronous submit response path.
+
+**Regression test**: `tests/test_preflight.py`.
+
 ## Open
 
 *(No open issues remaining in Phase 0 queue.)*
+
 
 
 

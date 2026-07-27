@@ -76,12 +76,19 @@ async def submit_code(
     # Launch background job pipeline asynchronously (closes ISSUE-004)
     asyncio.create_task(run_review_pipeline(str(submission.id)))
 
+    from app.reviewer.preflight import check_preflight
+    preflight_warnings = check_preflight(heuristics, payload.language, payload.code)
+
+
     return {
         "job_id": str(submission.id),
         "submission_id": str(submission.id),
         "status": "processing",
         "message": "Review job queued successfully",
+        "raw_heuristics": heuristics,
+        "preflight_warnings": preflight_warnings,
     }
+
 
 
 @router.get("/job/{job_id}")
