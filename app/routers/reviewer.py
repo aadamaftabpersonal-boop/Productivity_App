@@ -177,6 +177,42 @@ async def get_submission(
         .where(CodeSubmission.id == submission_id, CodeSubmission.user_id == current_user.id)
     )
     submission = result.scalar_one_or_none()
+
     if not submission:
         raise HTTPException(status_code=404, detail="Submission not found")
-    return submission
+    return submission
+
+
+from app.reviewer.hints import get_gated_hint
+
+@router.get("/{submission_id}/hints")
+
+async def get_submission_hints(
+    submission_id: str,
+    tier: int = 1,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(CodeSubmission)
+        .options(selectinload(CodeSubmission.review))
+        .where(CodeSubmission.id == submission_id, CodeSubmission.user_id == current_user.id)
+    )
+    submission = result.scalar_one_or_none()
+    if not submission or not submission.review:
+        raise HTTPException(status_code=404, detail="Submission or review not found")
+
+    review_data = {
+        "time_complexity": submission.review.time_complexity,
+        "space_complexity": submission.review.space_complexity,
+        "suggestions": submission.review.suggestions,
+        "better_approach": submission.review.better_approach,
+        "code_diff": submission.review.code_diff,
+    }
+    return get_gated_hint(
+        heuristics={},
+        retrieved=getattr(submission.review, "retrieved_reference", []),
+        review_data=review_data,
+        unlocked_tier=tier,
+    )
+

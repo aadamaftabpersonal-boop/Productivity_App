@@ -91,9 +91,17 @@ Added `app/reviewer/preflight.py` to turn tree-sitter AST heuristics into instan
 
 **Regression test**: `tests/test_preflight.py`.
 
+### ISSUE-011: Progressive 3-tier hint engine implemented with zero early API data leakage
+**Status: Fixed**
+
+Implemented `app/reviewer/hints.py` to gate hints in 3 progressive tiers (Tier 1: Pattern Name, Tier 2: Complexity Target, Tier 3: Corner-Case Warnings, Tier 4: Full Solution Review). API responses for Tiers 1-3 strictly omit solution code and suggestions to prevent devtools data leakage.
+
+**Regression test**: `tests/test_hints.py`.
+
 ## Open
 
 *(No open issues remaining in Phase 0 queue.)*
+
 
 
 

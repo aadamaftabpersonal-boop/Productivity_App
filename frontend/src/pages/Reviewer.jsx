@@ -13,8 +13,9 @@ export default function Reviewer() {
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [jobStatus, setJobStatus] = useState(null);
   const [activeTab, setActiveTab] = useState("summary"); // "summary" | "diff" | "ast" | "fuzzer"
+  const [unlockedTier, setUnlockedTier] = useState(1);
+
 
   const loadHistory = () => {
     client.get("/reviewer/history").then((res) => setHistory(res.data)).catch(() => {});
@@ -288,15 +289,44 @@ export default function Reviewer() {
                       </div>
                     )}
 
-                    <div className="flex gap-2 flex-wrap">
-                      <span className="badge badge-cyan">LLM Complexity: {selected.review.time_complexity || "N/A"}</span>
-                      {selected.review.measured_complexity && (
-                        <span className="badge badge-violet">Empirical Measured: {selected.review.measured_complexity}</span>
+                    {/* Progressive 3-Tier Hint Engine Card */}
+                    <div className="p-5 rounded-xl bg-slate-950/90 border border-amber-500/30 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <div className="font-bold text-amber-400 text-sm flex items-center gap-2">
+                          <Zap size={16} /> Progressive Hint Engine (Tier {unlockedTier}/4 Unlocked)
+                        </div>
+                        {unlockedTier < 4 && (
+                          <button
+                            onClick={() => setUnlockedTier((prev) => Math.min(4, prev + 1))}
+                            className="btn-primary text-xs py-1.5 px-3 bg-gradient-to-r from-amber-500 to-orange-600"
+                          >
+                            Unlock Next Hint Tier ({unlockedTier + 1}/4) →
+                          </button>
+                        )}
+                      </div>
+
+                      {unlockedTier >= 1 && (
+                        <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+                          <span className="font-bold text-amber-400 font-mono uppercase">Tier 1 (Pattern Hint):</span>{" "}
+                          <span className="text-slate-200">This problem relates to <strong>{selected.review.concepts?.[0]?.replace('_', ' ') || "Algorithms & Data Structures"}</strong>.</span>
+                        </div>
                       )}
-                      {selected.review.score != null && (
-                        <span className="badge badge-emerald">Quality Score: {selected.review.score}/100</span>
+
+                      {unlockedTier >= 2 && (
+                        <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+                          <span className="font-bold text-cyan-400 font-mono uppercase">Tier 2 (Complexity Target):</span>{" "}
+                          <span className="text-slate-200">Optimal target bound is <strong>{selected.review.time_complexity || "O(N)"}</strong> time.</span>
+                        </div>
+                      )}
+
+                      {unlockedTier >= 3 && (
+                        <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+                          <span className="font-bold text-violet-400 font-mono uppercase">Tier 3 (Corner-Case Warning):</span>{" "}
+                          <span className="text-slate-200">Watch out for empty array inputs, N=1 edge cases, and off-by-one boundary checks.</span>
+                        </div>
                       )}
                     </div>
+
 
                     {/* Flaws & Structural Fixes */}
                     {selected.review.suggestions?.length > 0 && (
