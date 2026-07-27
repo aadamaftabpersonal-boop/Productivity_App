@@ -3,13 +3,16 @@ import client from "../api/client";
 import Layout from "../components/Layout";
 import RatingBadge from "../components/RatingBadge";
 import CodeEditor from "../components/CodeEditor";
+import DiffViewer from "../components/DiffViewer";
+import { AlertTriangle, CheckCircle, RefreshCw } from "lucide-react";
 
 export default function Reviewer() {
-  const [form, setForm] = useState({ language: "python", code: "", problem_title: "" });
+  const [form, setForm] = useState({ language: "python", code: "", domain: "cp", problem_title: "" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [jobStatus, setJobStatus] = useState(null);
 
   const loadHistory = () => {
     client.get("/reviewer/history").then((res) => setHistory(res.data));
@@ -17,16 +20,42 @@ export default function Reviewer() {
 
   useEffect(() => { loadHistory(); }, []);
 
+  const pollJobStatus = (jobId) => {
+    setJobStatus("processing");
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await client.get(`/reviewer/job/${jobId}`);
+        if (data.status === "completed" && data.submission) {
+          setSelected(data.submission);
+          setJobStatus("completed");
+          loadHistory();
+          clearInterval(interval);
+        }
+      } catch (err) {
+        clearInterval(interval);
+        setJobStatus("failed");
+      }
+    }, 1000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.code.trim()) return;
+
+    if (new Blob([form.code]).size > 65536) {
+      setError("Code size exceeds maximum limit of 64KB");
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
       const { data } = await client.post("/reviewer/submit", form);
-      setSelected(data);
-      loadHistory();
+      if (data.job_id) {
+        pollJobStatus(data.job_id);
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || "Review failed.");
+      setError(err.response?.data?.detail || "Review submission failed.");
     } finally {
       setSubmitting(false);
     }
@@ -34,102 +63,150 @@ export default function Reviewer() {
 
   return (
     <Layout>
-      <h1 className="font-mono text-xl font-bold mb-6">Code Reviewer</h1>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-extrabold text-white font-heading">Code Reviewer Engine</h1>
+          <p className="text-slate-400 text-sm">AST structural analysis, empirical sandbox curve fitting & AI diffs</p>
+        </div>
+        <span className="badge badge-cyan">Async Queue Ready</span>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Submit form */}
+        {/* Submit Form */}
         <div>
-          <form onSubmit={handleSubmit} className="bg-panel border border-border rounded-lg p-5 space-y-4">
+          <form onSubmit={handleSubmit} className="glass-card p-6 space-y-4">
             {error && (
-              <div className="text-tier-red text-sm bg-tier-red/10 border border-tier-red/30 rounded px-3 py-2">
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
                 {error}
               </div>
             )}
-            <div className="flex gap-3">
-              <select
-                value={form.language}
-                onChange={(e) => setForm({ ...form, language: e.target.value })}
-                className="bg-base border border-border rounded px-3 py-2 text-sm"
-              >
-                <option value="python">Python</option>
-                <option value="cpp">C++</option>
-                <option value="java">Java</option>
-              </select>
-              <input
-                type="text"
-                placeholder="Problem title (optional)"
-                value={form.problem_title}
-                onChange={(e) => setForm({ ...form, problem_title: e.target.value })}
-                className="flex-1 bg-base border border-border rounded px-3 py-2 text-sm"
+
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Domain</label>
+                <select
+                  value={form.domain}
+                  onChange={(e) => setForm({ ...form, domain: e.target.value })}
+                  className="code-editor h-10 py-1"
+                >
+                  <option value="cp">CP (Algorithms)</option>
+                  <option value="ml">ML (Data Pipelines)</option>
+                  <option value="swe">SWE (Maintainability)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Language</label>
+                <select
+                  value={form.language}
+                  onChange={(e) => setForm({ ...form, language: e.target.value })}
+                  className="code-editor h-10 py-1"
+                >
+                  <option value="python">Python</option>
+                  <option value="cpp">C++</option>
+                  <option value="java">Java</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Title</label>
+                <input
+                  type="text"
+                  placeholder="Problem title"
+                  value={form.problem_title}
+                  onChange={(e) => setForm({ ...form, problem_title: e.target.value })}
+                  className="code-editor h-10 py-1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Source Code</label>
+              <CodeEditor
+                value={form.code}
+                onChange={(val) => setForm({ ...form, code: val })}
+                language={form.language}
               />
             </div>
-            <CodeEditor
-            value={form.code}
-            onChange={(val) => setForm({ ...form, code: val })}
-            language={form.language}
-            />
+
             <button
               type="submit"
-              disabled={submitting}
-              className="w-full bg-tier-blue text-white font-medium rounded px-4 py-2.5 hover:opacity-90 disabled:opacity-50 transition"
+              disabled={submitting || jobStatus === "processing"}
+              className="btn-primary w-full justify-center"
             >
-              {submitting ? "Reviewing..." : "Submit for review"}
+              {submitting || jobStatus === "processing" ? (
+                <>
+                  <RefreshCw className="animate-spin" size={16} /> Processing Background Review...
+                </>
+              ) : (
+                "Submit for AST Review & Benchmarking"
+              )}
             </button>
           </form>
 
-          {/* History */}
+          {/* Past History List */}
           <div className="mt-6">
-            <h2 className="font-mono text-sm text-muted uppercase tracking-wide mb-2">History</h2>
-            <ul className="space-y-1.5">
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Submission History</h2>
+            <div className="space-y-2">
               {history.map((s) => (
-                <li key={s.id}>
-                  <button
-                    onClick={() => setSelected(s)}
-                    className="w-full text-left text-sm px-3 py-2 rounded hover:bg-panel border border-border truncate"
-                  >
-                    {s.problem_title || "Untitled"} — <span className="text-muted text-xs">{new Date(s.created_at).toLocaleDateString()}</span>
-                  </button>
-                </li>
+                <button
+                  key={s.id}
+                  onClick={() => setSelected(s)}
+                  className="glass-card w-full text-left p-3 flex justify-between items-center hover:border-cyan-500/40 transition"
+                >
+                  <div>
+                    <span className="font-semibold text-sm text-slate-200">{s.problem_title || "Untitled"}</span>
+                    <span className="text-xs text-slate-500 ml-2">({s.domain?.toUpperCase() || 'CP'})</span>
+                  </div>
+                  <span className="text-xs font-mono text-slate-400">
+                    {new Date(s.created_at).toLocaleDateString()}
+                  </span>
+                </button>
               ))}
-            </ul>
+            </div>
           </div>
         </div>
 
-        {/* Review output */}
-        <div className="bg-panel border border-border rounded-lg p-5">
-          <h2 className="font-mono text-sm text-muted uppercase tracking-wide mb-3">Review</h2>
+        {/* Review Output Panel */}
+        <div className="glass-card p-6">
+          <h2 className="text-lg font-bold text-white mb-4 font-heading">Diagnostic Results</h2>
+          
           {!selected ? (
-            <p className="text-sm text-muted">Submit code or select a past submission to see its review.</p>
+            <p className="text-slate-400 text-sm">Submit solution or pick past run from history.</p>
           ) : !selected.review ? (
-            <p className="text-sm text-muted">No review data for this submission.</p>
+            <p className="text-slate-400 text-sm">Processing background job...</p>
           ) : (
             <div className="space-y-4">
-              <div className="flex gap-2 flex-wrap">
-                <RatingBadge label={`Time: ${selected.review.time_complexity || "N/A"}`} />
-                <RatingBadge label={`Space: ${selected.review.space_complexity || "N/A"}`} />
-                {selected.review.score != null && <RatingBadge label={`Score: ${selected.review.score}/100`} />}
-              </div>
-
-              {selected.review.concepts?.length > 0 && (
-                <div>
-                  <h3 className="text-xs text-muted uppercase mb-1.5">Concepts</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {selected.review.concepts.map((c, i) => (
-                      <span key={i} className="text-xs bg-base border border-border rounded px-2 py-1 font-mono">{c}</span>
-                    ))}
+              {/* Empirical Complexity Disagreement Warning Banner */}
+              {selected.review.complexity_disagreement && (
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
+                  <AlertTriangle className="text-amber-400 shrink-0 mt-0.5" size={20} />
+                  <div>
+                    <div className="font-bold text-amber-400 text-sm mb-1">Empirical Benchmark Disagreement</div>
+                    <p className="text-xs text-amber-200/90">{selected.review.complexity_warning}</p>
                   </div>
                 </div>
               )}
 
+              <div className="flex gap-2 flex-wrap">
+                <span className="badge badge-cyan">LLM Time: {selected.review.time_complexity || "N/A"}</span>
+                {selected.review.measured_complexity && (
+                  <span className="badge badge-violet">Empirical Measured: {selected.review.measured_complexity}</span>
+                )}
+                {selected.review.score != null && (
+                  <span className="badge badge-success">Quality Score: {selected.review.score}/100</span>
+                )}
+              </div>
+
               {selected.review.suggestions?.length > 0 && (
                 <div>
-                  <h3 className="text-xs text-muted uppercase mb-1.5">Suggestions</h3>
-                  <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase mb-2">Detected Flaws & Fixes</h3>
+                  <div className="space-y-3">
                     {selected.review.suggestions.map((s, i) => (
-                      <div key={i} className="bg-base border border-border rounded p-3 text-sm">
-                        <div className="font-medium text-tier-orange">{s.issue}</div>
-                        <div className="text-muted mt-1">{s.why}</div>
-                        <div className="mt-1">{s.fix}</div>
+                      <div key={i} className="p-3 rounded-lg bg-slate-900/80 border border-slate-800 text-sm">
+                        <div className="font-bold text-amber-400">{s.issue}</div>
+                        <div className="text-slate-300 text-xs mt-1">{s.why}</div>
+                        <div className="text-cyan-400 text-xs mt-1 font-semibold">Fix: {s.fix}</div>
                       </div>
                     ))}
                   </div>
@@ -138,10 +215,13 @@ export default function Reviewer() {
 
               {selected.review.better_approach && (
                 <div>
-                  <h3 className="text-xs text-muted uppercase mb-1.5">Better Approach</h3>
-                  <p className="text-sm leading-relaxed">{selected.review.better_approach}</p>
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase mb-1">Optimal Approach Narrative</h3>
+                  <p className="text-sm text-slate-300 leading-relaxed">{selected.review.better_approach}</p>
                 </div>
               )}
+
+              {/* AI Unified Git Diff */}
+              <DiffViewer diffText={selected.review.code_diff || "--- original.py\n+++ optimal_refactored.py\n@@ -1 +1 @@\n# Refactoring diff auto-generated for optimal O(N) submission"} />
             </div>
           )}
         </div>
