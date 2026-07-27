@@ -78,8 +78,11 @@ class TrackContestRequest(BaseModel):
 
 class ActiveWeaknessOut(BaseModel):
     concept: str
+    canonical_name: str = ""
     gap_count: int
     last_flagged_at: datetime | None
+    recommended_problems: list[dict] = []
+
 
 class ResurfaceOut(BaseModel):
     mode: str

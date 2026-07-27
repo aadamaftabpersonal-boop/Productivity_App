@@ -70,6 +70,8 @@ export default function Weakness() {
     }
   };
 
+  const [selectedWeakness, setSelectedWeakness] = useState(null);
+
   return (
     <Layout>
       <div className="flex justify-between items-center mb-8">
@@ -97,7 +99,15 @@ export default function Weakness() {
             ) : (
               <div className="space-y-3">
                 {weaknesses.map((w) => (
-                  <div key={w.concept} className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                  <div
+                    key={w.concept}
+                    onClick={() => setSelectedWeakness(selectedWeakness === w.concept ? null : w.concept)}
+                    className={`p-4 rounded-xl border transition cursor-pointer space-y-3.5 ${
+                      selectedWeakness === w.concept
+                        ? "bg-slate-900 border-cyan-500/50 shadow-lg shadow-cyan-500/10"
+                        : "bg-slate-950/80 border-slate-800 hover:border-slate-700"
+                    }`}
+                  >
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-white text-base">{w.concept}</span>
                       <span className="badge badge-rose">{w.gap_count} Gaps</span>
@@ -110,16 +120,43 @@ export default function Weakness() {
                       />
                     </div>
 
-                    <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 font-mono">
                       <span>Threshold: 2+ flags active</span>
-                      <span>{w.last_flagged_at ? new Date(w.last_flagged_at).toLocaleDateString() : 'Recent'}</span>
+                      <span className="text-cyan-400 font-semibold">Click to view recommended problems ↓</span>
                     </div>
+
+                    {/* Curated Recommended Problems Dropdown */}
+                    {selectedWeakness === w.concept && w.recommended_problems?.length > 0 && (
+                      <div className="pt-2 border-t border-slate-800 space-y-2">
+                        <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+                          Matched LeetCode / Codeforces Problems:
+                        </div>
+                        {w.recommended_problems.map((p, idx) => (
+                          <div key={idx} className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex justify-between items-center text-xs font-mono">
+                            <div>
+                              <div className="font-bold text-white">{p.title}</div>
+                              <div className="text-[10px] text-slate-400">{p.platform} • <span className="text-amber-400">{p.difficulty}</span></div>
+                            </div>
+                            <a
+                              href={p.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="btn-secondary text-[11px] py-1 px-2.5 flex items-center gap-1 hover:border-cyan-500/50"
+                            >
+                              Solve <ExternalLink size={12} />
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             )}
           </div>
         </div>
+
 
         {/* Right Column: Targeted Practice Reconstruction Workspace (7 Cols) */}
         <div className="lg:col-span-7 space-y-4">

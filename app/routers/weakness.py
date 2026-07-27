@@ -11,6 +11,8 @@ from app.weakness.resurface import get_resurface_item
 router = APIRouter(prefix="/weakness", tags=["weakness"])
 
 
+from app.weakness.taxonomy import CURATED_PROBLEMS_BY_CONCEPT
+
 @router.get("/active", response_model=list[ActiveWeaknessOut])
 async def list_active_weaknesses(
     db: AsyncSession = Depends(get_db),
@@ -23,14 +25,22 @@ async def list_active_weaknesses(
         .order_by(WeaknessRecord.gap_count.desc())
     )
     rows = result.all()
-    return [
-        ActiveWeaknessOut(
+    out = []
+    for wr, ct in rows:
+        c_name = ct.canonical_name.lower()
+        probs = CURATED_PROBLEMS_BY_CONCEPT.get(c_name, [
+            {"title": f"Solve {ct.display_name} Problem #1", "platform": "LeetCode", "difficulty": "Medium", "url": f"https://leetcode.com/problemset/all/?topicSlugs={c_name}"},
+            {"title": f"Practice {ct.display_name} Rep", "platform": "Codeforces", "difficulty": "Medium", "url": f"https://codeforces.com/problemset?tags={c_name}"},
+        ])
+        out.append(ActiveWeaknessOut(
             concept=ct.display_name,
+            canonical_name=c_name,
             gap_count=wr.gap_count,
             last_flagged_at=wr.last_flagged_at,
-        )
-        for wr, ct in rows
-    ]
+            recommended_problems=probs,
+        ))
+    return out
+
 
 
 from app.weakness.resurface import get_resurface_item, record_resurface_result

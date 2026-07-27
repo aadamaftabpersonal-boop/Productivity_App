@@ -30,3 +30,45 @@ CONCEPT_SEED_DATA = [
     {"canonical_name": "segment_tree", "display_name": "Segment Tree",
      "aliases": ["segment tree", "fenwick tree", "binary indexed tree"]},
 ]
+
+CURATED_PROBLEMS_BY_CONCEPT = {
+    "two_pointers": [
+        {"title": "3Sum", "platform": "LeetCode", "difficulty": "Medium", "url": "https://leetcode.com/problems/3sum/", "id": "15"},
+        {"title": "Container With Most Water", "platform": "LeetCode", "difficulty": "Medium", "url": "https://leetcode.com/problems/container-with-most-water/", "id": "11"},
+        {"title": "Similar Pairs", "platform": "Codeforces", "difficulty": "Easy (800)", "url": "https://codeforces.com/problemset/problem/1360/C", "id": "1360C"},
+    ],
+    "hash_map": [
+        {"title": "Two Sum", "platform": "LeetCode", "difficulty": "Easy", "url": "https://leetcode.com/problems/two-sum/", "id": "1"},
+        {"title": "Group Anagrams", "platform": "LeetCode", "difficulty": "Medium", "url": "https://leetcode.com/problems/group-anagrams/", "id": "49"},
+        {"title": "Registration System", "platform": "Codeforces", "difficulty": "Medium (1300)", "url": "https://codeforces.com/problemset/problem/4/C", "id": "4C"},
+    ],
+    "dp": [
+        {"title": "Coin Change", "platform": "LeetCode", "difficulty": "Medium", "url": "https://leetcode.com/problems/coin-change/", "id": "322"},
+        {"title": "Climbing Stairs", "platform": "LeetCode", "difficulty": "Easy", "url": "https://leetcode.com/problems/climbing-stairs/", "id": "70"},
+        {"title": "Boredom", "platform": "Codeforces", "difficulty": "Medium (1500)", "url": "https://codeforces.com/problemset/problem/455/A", "id": "455A"},
+    ],
+    "binary_search": [
+        {"title": "Search in Rotated Sorted Array", "platform": "LeetCode", "difficulty": "Medium", "url": "https://leetcode.com/problems/search-in-rotated-sorted-array/", "id": "33"},
+        {"title": "Binary Search", "platform": "LeetCode", "difficulty": "Easy", "url": "https://leetcode.com/problems/binary-search/", "id": "704"},
+        {"title": "Poisoned Dagger", "platform": "Codeforces", "difficulty": "Medium (1200)", "url": "https://codeforces.com/problemset/problem/1613/C", "id": "1613C"},
+    ],
+    "sliding_window": [
+        {"title": "Longest Substring Without Repeating Characters", "platform": "LeetCode", "difficulty": "Medium", "url": "https://leetcode.com/problems/longest-substring-without-repeating-characters/", "id": "3"},
+        {"title": "Minimum Window Substring", "platform": "LeetCode", "difficulty": "Hard", "url": "https://leetcode.com/problems/minimum-window-substring/", "id": "76"},
+        {"title": "Fence", "platform": "Codeforces", "difficulty": "Medium (1100)", "url": "https://codeforces.com/problemset/problem/363/B", "id": "363B"},
+    ],
+    "graph_traversal": [
+        {"title": "Number of Islands", "platform": "LeetCode", "difficulty": "Medium", "url": "https://leetcode.com/problems/number-of-islands/", "id": "200"},
+        {"title": "Course Schedule", "platform": "LeetCode", "difficulty": "Medium", "url": "https://leetcode.com/problems/course-schedule/", "id": "207"},
+        {"title": "Kefa and Park", "platform": "Codeforces", "difficulty": "Medium (1500)", "url": "https://codeforces.com/problemset/problem/580/C", "id": "580C"},
+    ],
+    "monotonic_stack": [
+        {"title": "Daily Temperatures", "platform": "LeetCode", "difficulty": "Medium", "url": "https://leetcode.com/problems/daily-temperatures/", "id": "739"},
+        {"title": "Trapping Rain Water", "platform": "LeetCode", "difficulty": "Hard", "url": "https://leetcode.com/problems/trapping-rain-water/", "id": "42"},
+        {"title": "Sliding Window Maximum", "platform": "LeetCode", "difficulty": "Hard", "url": "https://leetcode.com/problems/sliding-window-maximum/", "id": "239"},
+    ],
+    "heap_priority_queue": [
+        {"title": "Kth Largest Element in an Array", "platform": "LeetCode", "difficulty": "Medium", "url": "https://leetcode.com/problems/kth-largest-element-in-an-array/", "id": "215"},
+        {"title": "Merge k Sorted Lists", "platform": "LeetCode", "difficulty": "Hard", "url": "https://leetcode.com/problems/merge-k-sorted-lists/", "id": "23"},
+    ],
+}

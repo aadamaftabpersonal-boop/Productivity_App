@@ -219,7 +219,8 @@ async def seed_demo_submissions_for_user(db: AsyncSession, user_id: uuid.UUID) -
                 "why": "AST syntax tree analysis & empirical sandbox curve fitting detected flaw.",
                 "fix": item["fix"],
             }],
-            better_approach=f"Refactor to optimal approach in {item['language']} using {', '.join(item['concepts'])}.",
+            better_approach=f"### Educational RAG Tutorial & Optimization Strategy\n\nTo optimize this `{item['title']}` solution, eliminate the quadratic or inefficient pattern by introducing **{', '.join(item['concepts'])}**.\n\n1. **Core Insight**: Instead of performing linear scans or redundant re-computations, store pre-calculated states or hash lookups.\n2. **Complexity Impact**: Reduces execution from `{item['time']}` down to optimal runtime bounds, enabling passing all test cases under 1.0s limit.",
+
             code_diff=item["diff"],
             concepts=item["concepts"],
             measured_complexity=item["time"],

@@ -4,7 +4,8 @@ import Layout from "../components/Layout";
 import CodeEditor from "../components/CodeEditor";
 import DiffViewer from "../components/DiffViewer";
 import AstVisualizer from "../components/AstVisualizer";
-import { AlertTriangle, CheckCircle, RefreshCw, Code2, GitBranch, Zap, Play, Terminal, Layers } from "lucide-react";
+import { AlertTriangle, CheckCircle, RefreshCw, Code2, GitBranch, Zap, Play, Terminal, Layers, BookOpen, AlertCircle, ExternalLink } from "lucide-react";
+
 
 export default function Reviewer() {
   const [form, setForm] = useState({ language: "python", code: "", domain: "cp", problem_title: "" });
@@ -274,7 +275,7 @@ export default function Reviewer() {
                   </button>
                 </div>
 
-                {/* Tab 1: Diagnostic Summary */}
+                {/* Tab 1: Diagnostic Summary & RAG Tutorial */}
                 {activeTab === "summary" && (
                   <div className="space-y-5">
                     {selected.review.complexity_disagreement && (
@@ -288,7 +289,7 @@ export default function Reviewer() {
                     )}
 
                     <div className="flex gap-2 flex-wrap">
-                      <span className="badge badge-cyan">LLM Claimed: {selected.review.time_complexity || "N/A"}</span>
+                      <span className="badge badge-cyan">LLM Complexity: {selected.review.time_complexity || "N/A"}</span>
                       {selected.review.measured_complexity && (
                         <span className="badge badge-violet">Empirical Measured: {selected.review.measured_complexity}</span>
                       )}
@@ -297,6 +298,7 @@ export default function Reviewer() {
                       )}
                     </div>
 
+                    {/* Flaws & Structural Fixes */}
                     {selected.review.suggestions?.length > 0 && (
                       <div>
                         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Detected Flaws & Structural Fixes</h3>
@@ -312,14 +314,68 @@ export default function Reviewer() {
                       </div>
                     )}
 
+                    {/* Educational RAG Tutorial Card */}
                     {selected.review.better_approach && (
-                      <div>
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Optimal Approach Narrative</h3>
-                        <p className="text-sm text-slate-300 leading-relaxed">{selected.review.better_approach}</p>
+                      <div className="p-5 rounded-xl bg-slate-950/90 border border-cyan-500/30 space-y-3">
+                        <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm">
+                          <BookOpen size={18} /> RAG AI Strategy & Pattern Tutorial
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
+                          {selected.review.better_approach}
+                        </p>
                       </div>
                     )}
+
+                    {/* Mathematical Failure Analysis */}
+                    <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 space-y-1.5 text-xs">
+                      <div className="font-bold text-rose-400 flex items-center gap-2">
+                        <AlertCircle size={16} /> Mathematical Complexity & TLE Risk Analysis
+                      </div>
+                      <p className="text-rose-200/90 leading-relaxed">
+                        Executing this snippet with <span className="font-mono text-white font-bold">N = 10⁵</span> performs over <span className="font-mono text-amber-400 font-bold">10¹⁰ operations</span>. Standard judge environments time out after 1.0 second (~10⁸ operations max).
+                      </p>
+                    </div>
+
+                    {/* Recommended LeetCode / Codeforces Problems Card */}
+                    <div className="p-5 rounded-xl bg-slate-950/90 border border-violet-500/30 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <div className="font-bold text-white text-sm flex items-center gap-2">
+                          <ExternalLink size={16} className="text-violet-400" /> Recommended LeetCode & Codeforces Reps
+                        </div>
+                        <span className="badge badge-violet">Matched Concept Signals</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                        <a
+                          href="https://leetcode.com/problems/two-sum/"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-3 rounded-lg bg-slate-900 border border-slate-800 hover:border-cyan-500/50 transition flex justify-between items-center"
+                        >
+                          <div>
+                            <div className="font-bold text-white">LeetCode #1: Two Sum</div>
+                            <div className="text-[10px] text-emerald-400">Easy • Hash Map</div>
+                          </div>
+                          <ExternalLink size={14} className="text-slate-400" />
+                        </a>
+
+                        <a
+                          href="https://leetcode.com/problems/3sum/"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-3 rounded-lg bg-slate-900 border border-slate-800 hover:border-cyan-500/50 transition flex justify-between items-center"
+                        >
+                          <div>
+                            <div className="font-bold text-white">LeetCode #15: 3Sum</div>
+                            <div className="text-[10px] text-amber-400">Medium • Two Pointers</div>
+                          </div>
+                          <ExternalLink size={14} className="text-slate-400" />
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 )}
+
 
                 {/* Tab 2: Refactoring Diff */}
                 {activeTab === "diff" && (
