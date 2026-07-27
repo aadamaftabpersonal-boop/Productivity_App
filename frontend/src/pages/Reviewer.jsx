@@ -475,7 +475,9 @@ export default function Reviewer() {
                           </div>
                           <div className="text-[11px] text-slate-400">Input: <span className="text-cyan-400">{item.input}</span></div>
                           <div className="text-[11px] text-slate-400">Result: <span className="text-emerald-400">{item.output}</span> (Expected: {item.expected})</div>
+                        </div>
                       ))}
+
                     </div>
                   </div>
                 )}
