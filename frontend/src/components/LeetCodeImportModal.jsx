@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ExternalLink, CheckCircle } from 'lucide-react';
+import { CheckCircle, Award, Trophy, User } from 'lucide-react';
 
 export default function LeetCodeImportModal({ isOpen, onClose, onImportSuccess, api }) {
   const [handle, setHandle] = useState('');
@@ -43,20 +43,20 @@ export default function LeetCodeImportModal({ isOpen, onClose, onImportSuccess, 
         </div>
 
         <h3 className="text-2xl font-bold text-white mb-2 font-heading">
-          Import LeetCode Submissions
+          Import LeetCode Profile & Submissions
         </h3>
         <p className="text-slate-400 text-sm mb-6">
-          Enter your LeetCode username to pull accepted submissions and backfill weakness signals into your profile.
+          Enter your LeetCode username to pull accepted submissions, contest rating, solved stats, and backfill weakness signals.
         </p>
 
         <form onSubmit={handleImport} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              LeetCode Username
+              LeetCode Username / Display Name
             </label>
             <input
               type="text"
-              placeholder="e.g. neetcode, alex_dev"
+              placeholder="e.g. HumVelleHain, 1F4ngx0MHe, neetcode"
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
               className="code-editor h-12 text-sm"
@@ -71,27 +71,61 @@ export default function LeetCodeImportModal({ isOpen, onClose, onImportSuccess, 
           )}
 
           {successResult && (
-            <div className="p-5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="font-bold text-sm text-amber-400 flex items-center gap-1.5">
-                  <CheckCircle size={16} /> LeetCode Sync Complete for "{successResult.handle}"
+            <div className="p-5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
+                <div className="flex items-center gap-3">
+                  {successResult.avatar ? (
+                    <img src={successResult.avatar} alt="Avatar" className="w-10 h-10 rounded-full border border-amber-400" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold">
+                      <User size={20} />
+                    </div>
+                  )}
+                  <div>
+                    <div className="font-bold text-base text-white">{successResult.real_name}</div>
+                    <div className="text-xs text-amber-400 font-mono">@{successResult.resolved_username} • Global Rank #{successResult.ranking}</div>
+                  </div>
                 </div>
-                <span className="badge badge-amber">{successResult.submissions_imported} Submissions Fetched</span>
+                <span className="badge badge-amber">{successResult.total_solved} Solved</span>
               </div>
 
-              <div className="font-semibold text-slate-300">Fetched Submissions & Backfilled Concepts:</div>
-              
-              <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
-                {successResult.flagged_concepts?.length > 0 ? (
-                  successResult.flagged_concepts.map((concept, idx) => (
-                    <div key={idx} className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 flex justify-between items-center text-xs">
+              {/* 3 Difficulty Metric Pills */}
+              <div className="grid grid-cols-3 gap-2 text-center font-mono">
+                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                  <div className="font-bold text-sm">{successResult.easy_solved}</div>
+                  <div className="text-[10px] text-slate-400">Easy</div>
+                </div>
+                <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                  <div className="font-bold text-sm">{successResult.medium_solved}</div>
+                  <div className="text-[10px] text-slate-400">Medium</div>
+                </div>
+                <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400">
+                  <div className="font-bold text-sm">{successResult.hard_solved}</div>
+                  <div className="text-[10px] text-slate-400">Hard</div>
+                </div>
+              </div>
+
+              {/* Badges Earned */}
+              {successResult.badges?.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Award size={14} className="text-amber-400" />
+                  {successResult.badges.map((b, i) => (
+                    <span key={i} className="badge badge-violet">{b}</span>
+                  ))}
+                </div>
+              )}
+
+              {/* Backfilled Concept Tags */}
+              <div>
+                <div className="font-semibold text-slate-300 mb-2">Backfilled Concept Weakness Signals:</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {successResult.flagged_concepts?.map((concept, idx) => (
+                    <div key={idx} className="p-2 rounded-lg bg-slate-950/80 border border-slate-800 flex justify-between items-center text-xs">
                       <span className="font-mono text-slate-200 font-semibold">{concept.toUpperCase().replace('_', ' ')}</span>
-                      <span className="badge badge-emerald">Weakness Signal Backfilled</span>
+                      <span className="badge badge-emerald">Active</span>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-slate-400">All submissions analyzed — zero gap flags detected.</div>
-                )}
+                  ))}
+                </div>
               </div>
             </div>
           )}
