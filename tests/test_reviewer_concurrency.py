@@ -137,7 +137,7 @@ async def test_event_loop_not_blocked_during_review(registered_user, monkeypatch
             review_resp = await review_task
 
     assert fast_resp.status_code == 200
-    assert review_resp.status_code == 201
+    assert review_resp.status_code == 202
 
     # THIS is the assertion that fails against the old synchronous-client
     # code: /health, requested WHILE the review call is actively in its

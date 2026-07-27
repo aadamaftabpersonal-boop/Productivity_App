@@ -41,24 +41,33 @@ Replaced naive substring counting in `_detect_recursion` with scope-aware AST ca
 
 **Regression test**: `tests/test_tree_analysis.py`.
 
+### ISSUE-003: Empirical complexity verification & sandboxed execution
+**Status: Fixed**
+
+Implemented a sandboxed execution harness (`app/reviewer/complexity_sandbox.py`) that runs submitted code across synthetic inputs at multiple sizes ($N \in [10^2, 3 \cdot 10^3]$), fits timing data to canonical growth curves via log-log least squares regression, and cross-checks the empirical fit against the LLM's claimed complexity. Disagreements trigger an explicit warning surfacing both measured growth and LLM claim to the user.
+
+**Regression test**: `tests/test_complexity_sandbox.py`.
+
+### ISSUE-004: Async background job queue with Arq
+**Status: Fixed**
+
+Implemented `arq` background job pipeline (`app/jobs/queue.py`) for processing submission reviews and empirical execution benchmarks asynchronously without blocking interactive request latency. Submitting code returns HTTP 202 Accepted with a job ID, and job status is pollable via `/reviewer/job/{job_id}`.
+
+**Regression test**: `tests/test_jobs.py`.
+
+### ISSUE-005: Rate limiting on auth endpoints
+**Status: Fixed**
+
+Added `slowapi` IP/account token-bucket rate limiters on `/auth/login` (15/min), `/auth/register` (10/min), and `/auth/refresh` (30/min).
+
+### ISSUE-006: Input size & sanitization limit on submitted code
+**Status: Fixed**
+
+Enforced a 64KB (`65536` bytes) input size limit on submitted code payloads prior to AST parsing or background review pipeline execution. Oversized inputs are rejected immediately with HTTP 400 Bad Request.
+
+**Regression test**: `tests/test_security_limits.py`.
+
 ## Open
 
-### ISSUE-003: No independent verification of LLM complexity claims
-Everything the review reports about time/space complexity is the LLM's own
-output, fed structural facts as prompt context but never independently
-checked against them. A wrong complexity claim currently ships with the
-same confidence as a correct one.
+*(No open issues remaining in Phase 0 queue.)*
 
-### ISSUE-004: Resume claim of "Arq background jobs" doesn't match this repo
-No `arq` dependency or usage exists in this codebase as of this commit.
-Either implement it for real (queue the LLM review calls so they don't
-compete with interactive request latency) or remove the claim wherever it's
-stated externally.
-
-### ISSUE-005: No rate limiting on auth endpoints
-`/auth/login`, `/auth/register`, `/auth/refresh` have no rate limiting.
-
-### ISSUE-006: No input size/sanitization limit on submitted code
-Arbitrary user-submitted text is passed to the tree-sitter parser with no
-size cap — worth stress-testing with adversarial/oversized input before
-this is exposed to real users.

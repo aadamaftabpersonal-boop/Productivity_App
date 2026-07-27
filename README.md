@@ -27,11 +27,11 @@ for the full phased roadmap.
 ## Known, honestly-documented limitations (as of this commit)
 
 - AST structural analysis parses loop nesting depth, syntax validity, scope-aware call-graph recursion, and type/declaration/constructor nodes for data structures (Python, C++, Java).
-- Complexity claims in a review are currently LLM output with no independent
-  verification. An empirical scaling-test cross-check is planned but not
-  yet built.
-- No production usage data yet — this has not been used by real CP students
-  beyond the author's own testing.
+- Empirical complexity verification runs submitted code in a sandboxed subprocess harness across synthetic input sizes, fitting runtime curves to canonical growth models and cross-checking against LLM claims.
+- Asynchronous review generation and execution harness benchmarks are queued via `arq` background workers.
+- Auth endpoints (`/auth/login`, `/auth/register`, `/auth/refresh`) are rate-limited via `slowapi`, and code inputs are capped at 64KB.
+- No production usage data yet — this has not been used by real CP students beyond testing.
+
 
 ## Running locally
 
