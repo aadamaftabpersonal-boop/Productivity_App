@@ -11,11 +11,14 @@ from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 from app.database import engine, Base, AsyncSessionLocal
 from app.weakness.matcher import load_concept_index
+from app.reviewer.rag_index import build_index
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
+    # Build RAG knowledge index on startup
+    build_index()
     # Ensure all tables exist on startup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

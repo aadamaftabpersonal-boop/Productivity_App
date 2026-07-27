@@ -70,8 +70,23 @@ Enforced a 64KB (`65536` bytes) input size limit on submitted code payloads prio
 
 Domain scope narrowed exclusively to CP (Algorithms) and SWE (Maintainability) to align strictly with the OA Prep Helper product thesis. Removed `app/domains/ml.py` and `tests/test_ml_analyzer.py`. Updated routers and frontend dropdown selectors to allow only `"cp"` and `"swe"` domains. Existing database records with `domain = 'ml'` remain preserved to prevent historical read crashes.
 
+### ISSUE-008: Real RAG retrieval replacing prompt that falsely claimed RAG
+**Status: Fixed**
+
+Replaced ungrounded LLM review prompts with real in-memory RAG retrieval (`app/reviewer/rag_index.py` & `app/reviewer/knowledge_base.py`). System prompt and user prompt now ground reviews strictly in retrieved canonical solutions, common mistakes, and algorithm explanations.
+
+**Regression test**: `tests/test_rag_retrieval.py`.
+
+### ISSUE-009: Diff generator wrong-fallback bug fixed
+**Status: Fixed**
+
+`diff_generator.py` previously fell back to a hardcoded Two Sum solution whenever LLM diff generation timed out or failed. Replaced hardcoded Two Sum stubs with `retrieved[0]["canonical_solution"]` when available, or a clean non-misleading patch header.
+
+**Regression test**: `tests/test_rag_retrieval.py`.
+
 ## Open
 
 *(No open issues remaining in Phase 0 queue.)*
+
 
 

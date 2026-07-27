@@ -2,17 +2,18 @@ import json
 import re
 from groq import AsyncGroq
 from app.config import settings
+from app.reviewer.rag_index import retrieve
 
 client = AsyncGroq(api_key=settings.groq_api_key)
 
-SYSTEM_PROMPT = """You are a world-class competitive programming coach and computer science professor giving a deep RAG tutorial review of a student's DSA/CP code.
+SYSTEM_PROMPT = """You are a world-class competitive programming coach and computer science professor reviewing a student's DSA/CP code.
 
-You will receive:
+You are provided with:
 1. The student's code
-2. Static AST facts (loop nesting depth, recursion, data structures detected)
-3. Optional problem title or statement
+2. Static AST facts (loop nesting, recursion, data structures)
+3. Grounded reference material retrieved from the concept knowledge base
 
-Your task: Provide a comprehensive, highly educational tutorial review that directly teaches the student.
+Your job: Provide a tutorial review grounded strictly in the retrieved reference material. Explain WHY the current code is suboptimal using complexity principles from the reference, and guide the student on applying the canonical pattern.
 
 Respond with ONLY a valid JSON object, structured as follows:
 
@@ -23,25 +24,32 @@ Respond with ONLY a valid JSON object, structured as follows:
   "suggestions": [
     {"issue": "Nested Loop Lookup", "why": "Linear scan inside outer loop causes quadratic O(N^2) complexity", "fix": "Replace inner loop with O(1) Hash Map lookup"}
   ],
-  "better_approach": "Comprehensive RAG tutorial paragraph explaining the optimal algorithm pattern, why it works, and how to apply it.",
-  "line_by_line_audit": "Detailed line-by-line breakdown of how the student's code executes and where bottlenecks occur.",
-  "failure_analysis": "Mathematical explanation of why the current time/space complexity fails for large inputs (e.g. N = 10^5 => 10^10 operations => Time Limit Exceeded).",
+  "better_approach": "Comprehensive tutorial paragraph explaining the optimal algorithm pattern, why it works, and how to apply it based on retrieved reference material.",
+  "line_by_line_audit": "Detailed line-by-line breakdown of how the student's code executes.",
+  "failure_analysis": "Mathematical explanation of why the current complexity fails for large inputs.",
   "step_by_step_guide": [
-    "Step 1: Initialize a Hash Map to store numbers and their indices.",
-    "Step 2: Iterate through the array once.",
-    "Step 3: Check if target - num exists in the map."
+    "Step 1: Declare the primary data structure from reference material.",
+    "Step 2: Perform a single pass over input.",
+    "Step 3: Check complement or window condition."
   ],
   "score": 60
 }
 
 Rules:
-- Make better_approach, line_by_line_audit, and failure_analysis rich, detailed, and educational.
+- Ground your analysis directly in the provided retrieved reference material.
 - Do not return markdown fences outside the JSON object.
 """
 
 
-def build_user_prompt(code: str, language: str, heuristics: dict, problem_title: str | None, problem_statement: str | None) -> str:
+def build_user_prompt(code: str, language: str, heuristics: dict, problem_title: str | None, problem_statement: str | None, retrieved: list[dict] = None) -> str:
     parts = [f"Language: {language}", f"Structural facts: {json.dumps(heuristics)}"]
+    
+    if retrieved:
+        ref_block = []
+        for item in retrieved:
+            ref_block.append(f"--- Concept: {item.get('display_name')} ---\nExplanation: {item.get('explanation')}\nCanonical Solution:\n{item.get('canonical_solution')}\nCommon Mistakes: {', '.join(item.get('common_mistakes', []))}")
+        parts.append("Retrieved reference material — ground your answer in this:\n" + "\n\n".join(ref_block))
+
     if problem_title:
         parts.append(f"Problem: {problem_title}")
     if problem_statement:
@@ -64,7 +72,11 @@ def _extract_json(raw: str) -> dict:
 
 
 async def get_review(code: str, language: str, heuristics: dict, problem_title: str | None = None, problem_statement: str | None = None) -> dict:
-    user_prompt = build_user_prompt(code, language, heuristics, problem_title, problem_statement)
+    # 1. Perform RAG retrieval first
+    detected_concepts = heuristics.get("detected_data_structures", [])
+    retrieved = retrieve(concepts=detected_concepts, query_text=problem_title or code)
+    
+    user_prompt = build_user_prompt(code, language, heuristics, problem_title, problem_statement, retrieved=retrieved)
 
     try:
         completion = await client.chat.completions.create(
@@ -78,19 +90,21 @@ async def get_review(code: str, language: str, heuristics: dict, problem_title: 
         )
         raw_output = completion.choices[0].message.content
         parsed = _extract_json(raw_output)
-    except Exception as e:
+    except Exception:
+        ref_item = retrieved[0] if retrieved else {}
         parsed = {
             "time_complexity": heuristics.get("estimated_complexity", "O(N^2)"),
             "space_complexity": "O(N)",
-            "concepts": ["hash_map", "two_pointers"],
-            "suggestions": [{"issue": "Suboptimal Complexity", "why": "Nested loop execution causes performance degradation", "fix": "Use hash map or binary search"}],
-            "better_approach": "To optimize this solution, replace the nested linear search with an O(1) hash map table. By storing elements as key-value pairs during a single pass, you eliminate the quadratic bottleneck entirely.",
-            "line_by_line_audit": "Line 1-3: Initializes loop parameters.\nLine 4-6: Executes inner linear loop iterating N times per outer loop item.\nLine 7: Performs comparison creating O(N^2) total checks.",
-            "failure_analysis": "With N = 10^5, an O(N^2) algorithm executes 10^10 operations. Standard competitive programming judge limits (1.0s) allow ~10^8 operations, leading to Time Limit Exceeded (TLE).",
-            "step_by_step_guide": ["1. Declare a hash table or dictionary.", "2. Perform a single pass over input elements.", "3. Look up target complement in O(1) time."],
-            "score": 50,
+            "concepts": [ref_item.get("tag", "hash_map")],
+            "suggestions": [{"issue": "Suboptimal Loop Pattern", "why": ref_item.get("explanation", "Nested loop execution causes performance degradation"), "fix": "Use canonical data structure pattern"}],
+            "better_approach": f"To optimize this solution, introduce {ref_item.get('display_name', 'Hash Map')}. {ref_item.get('explanation', '')}",
+            "line_by_line_audit": "Line 1-3: Initializes loop parameters.\nLine 4-6: Executes inner linear loop iterating N times per outer loop item.",
+            "failure_analysis": "Executing N^2 operations on N = 10^5 causes Time Limit Exceeded (TLE) on 1.0s limit.",
+            "step_by_step_guide": ["1. Declare canonical data structure.", "2. Perform single pass over input collection."],
+            "score": 55,
         }
 
+    parsed["retrieved_reference"] = retrieved
     parsed.setdefault("time_complexity", None)
     parsed.setdefault("space_complexity", None)
     parsed.setdefault("concepts", [])
