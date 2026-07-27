@@ -134,6 +134,8 @@ class SubmissionConcept(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+from sqlalchemy import String, Boolean, DateTime, ForeignKey, Text, Integer, JSON, Float
+
 class WeaknessRecord(Base):
     """Aggregated per-user, per-concept weakness state. Updated after each review."""
     __tablename__ = "weakness_records"
@@ -143,7 +145,8 @@ class WeaknessRecord(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     concept_tag_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("concept_tags.id"), nullable=False)
     gap_count: Mapped[int] = mapped_column(Integer, default=0)          # times flagged as a gap
+    stability_days: Mapped[float] = mapped_column(Float, default=1.0, nullable=False)  # FSRS spaced repetition stability factor
     last_flagged_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     last_resurfaced_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     is_active_weakness: Mapped[bool] = mapped_column(Boolean, default=False)  # crosses recurrence threshold
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

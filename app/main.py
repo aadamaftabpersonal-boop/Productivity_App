@@ -14,6 +14,8 @@ from app.weakness.matcher import load_concept_index
 from app.reviewer.rag_index import build_index
 
 
+from sqlalchemy import text
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
@@ -22,10 +24,12 @@ async def lifespan(app: FastAPI):
     # Ensure all tables exist on startup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.execute(text("ALTER TABLE weakness_records ADD COLUMN IF NOT EXISTS stability_days FLOAT DEFAULT 1.0;"))
     # Seed taxonomy tags if empty
     async with AsyncSessionLocal() as session:
         await load_concept_index(session)
     yield
+
 
 
 

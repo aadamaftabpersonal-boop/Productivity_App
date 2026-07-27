@@ -105,9 +105,17 @@ Implemented `app/reviewer/tracer.py` using `sys.settrace` inside the existing su
 
 **Regression test**: `tests/test_tracer.py`.
 
+### ISSUE-013: Mistake Vault upgraded to FSRS stability-based spaced repetition scheduling
+**Status: Fixed**
+
+Replaced fixed 24-hour resurfacing cooldowns with an FSRS-inspired dynamic stability model (`stability_days` column added to `WeaknessRecord`). Successful re-attempts multiply review stability by 2.0 (up to 30.0 days cap), preventing mastered concepts from interrupting users at flat daily cadences. Failed re-attempts shrink stability down to 1.0 day floor.
+
+**Regression test**: `tests/test_resurface_decay.py`.
+
 ## Open
 
 *(No open issues remaining in Phase 0 queue.)*
+
 
 
 

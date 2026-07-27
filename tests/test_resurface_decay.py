@@ -61,3 +61,27 @@ async def test_resurface_decay_on_success(registered_user):
                 data = comp_resp.json()
                 assert data["success"] is True
                 assert data["cf_points_earned"] > 0
+                assert data["new_stability_days"] >= 2.0
+
+
+@pytest.mark.asyncio
+async def test_stability_shrinks_on_resurface_failure(registered_user):
+    _, _, tokens = registered_user
+    headers = {"Authorization": f"Bearer {tokens['access_token']}"}
+    from app.main import app
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resurface_item = await client.get("/weakness/resurface", headers=headers)
+        if resurface_item.status_code == 200 and resurface_item.json():
+            cid = resurface_item.json().get("concept_tag_id")
+            if cid:
+                fail_resp = await client.post(
+                    "/weakness/resurface/complete",
+                    json={"concept_tag_id": cid, "success": False, "time_taken_seconds": 300},
+                    headers=headers,
+                )
+                assert fail_resp.status_code == 200
+                data = fail_resp.json()
+                assert data["success"] is False
+                assert data["new_stability_days"] == 1.0
+
