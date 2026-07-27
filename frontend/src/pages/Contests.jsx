@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import client from "../api/client";
 import Layout from "../components/Layout";
+import { Trophy, RefreshCw, ExternalLink, Bookmark } from "lucide-react";
 
-const PLATFORM_COLOR = {
-  codeforces: "text-tier-blue border-tier-blue/40 bg-tier-blue/10",
-  leetcode: "text-tier-orange border-tier-orange/40 bg-tier-orange/10",
+const PLATFORM_BADGE = {
+  codeforces: "badge-cyan",
+  leetcode: "badge-amber",
 };
 
 export default function Contests() {
@@ -13,17 +14,20 @@ export default function Contests() {
   const [syncing, setSyncing] = useState(false);
 
   const load = () => {
-    client.get("/contests/upcoming").then((res) => setUpcoming(res.data));
-    client.get("/contests/tracked").then((res) => setTracked(res.data));
+    client.get("/contests/upcoming").then((res) => setUpcoming(res.data)).catch(() => {});
+    client.get("/contests/tracked").then((res) => setTracked(res.data)).catch(() => {});
   };
 
   useEffect(() => { load(); }, []);
 
   const handleSync = async () => {
     setSyncing(true);
-    await client.post("/contests/sync");
-    load();
-    setSyncing(false);
+    try {
+      await client.post("/contests/sync");
+      load();
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const track = async (id) => {
@@ -40,48 +44,61 @@ export default function Contests() {
 
   return (
     <Layout>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-mono text-xl font-bold">Contests</h1>
-        <button
-          onClick={handleSync}
-          disabled={syncing}
-          className="text-sm bg-panel border border-border rounded px-3 py-1.5 hover:bg-border/30 transition font-mono disabled:opacity-50"
-        >
-          {syncing ? "Syncing..." : "↻ Sync"}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-extrabold text-white font-heading flex items-center gap-3">
+            <Trophy className="text-amber-400" size={30} /> Competitive Contests Hub
+          </h1>
+          <p className="text-slate-400 text-sm">Real-time Codeforces & LeetCode contest tracking</p>
+        </div>
+
+        <button onClick={handleSync} disabled={syncing} className="btn-primary">
+          <RefreshCw size={15} className={syncing ? "animate-spin" : ""} />
+          {syncing ? "Syncing Platforms..." : "Sync Contest Schedule"}
         </button>
       </div>
 
-      <div className="bg-panel border border-border rounded-lg divide-y divide-border">
+      <div className="saas-card overflow-hidden">
         {upcoming.length === 0 ? (
-          <p className="text-sm text-muted p-5">No contests found. Try syncing.</p>
+          <div className="p-12 text-center text-slate-400 text-sm">
+            No upcoming contests synced yet. Click "Sync Contest Schedule" above.
+          </div>
         ) : (
-          upcoming.map((c) => (
-            <div key={c.id} className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <span className={`text-xs px-2 py-1 rounded border font-mono ${PLATFORM_COLOR[c.platform] || ""}`}>
-                  {c.platform}
-                </span>
-                <a href={c.url} target="_blank" rel="noreferrer" className="text-sm hover:underline">
-                  {c.name}
-                </a>
+          <div className="divide-y divide-slate-800/80">
+            {upcoming.map((c) => (
+              <div key={c.id} className="p-5 flex items-center justify-between hover:bg-slate-900/40 transition">
+                <div className="flex items-center gap-4">
+                  <span className={`badge ${PLATFORM_BADGE[c.platform] || "badge-violet"}`}>
+                    {c.platform}
+                  </span>
+                  <a
+                    href={c.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-bold text-white text-base hover:text-cyan-400 transition flex items-center gap-1.5"
+                  >
+                    {c.name} <ExternalLink size={14} className="text-slate-500" />
+                  </a>
+                </div>
+
+                <div className="flex items-center gap-6">
+                  <span className="text-xs text-slate-400 font-mono">
+                    {new Date(c.start_time).toLocaleString()}
+                  </span>
+
+                  <button
+                    onClick={() => (trackedIds.has(c.id) ? untrack(c.id) : track(c.id))}
+                    className={`btn-secondary text-xs py-1.5 px-3.5 ${
+                      trackedIds.has(c.id) ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : ""
+                    }`}
+                  >
+                    <Bookmark size={14} />
+                    {trackedIds.has(c.id) ? "Tracked" : "Track"}
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-muted font-mono">
-                  {new Date(c.start_time).toLocaleString()}
-                </span>
-                <button
-                  onClick={() => (trackedIds.has(c.id) ? untrack(c.id) : track(c.id))}
-                  className={`text-xs px-2.5 py-1 rounded border font-mono transition ${
-                    trackedIds.has(c.id)
-                      ? "border-tier-green/40 text-tier-green bg-tier-green/10"
-                      : "border-border text-muted hover:text-text"
-                  }`}
-                >
-                  {trackedIds.has(c.id) ? "Tracked" : "Track"}
-                </button>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </Layout>

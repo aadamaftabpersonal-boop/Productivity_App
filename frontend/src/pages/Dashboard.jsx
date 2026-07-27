@@ -3,6 +3,7 @@ import client from "../api/client";
 import Layout from "../components/Layout";
 import WeaknessRadar from "../components/WeaknessRadar";
 import CodeforcesImportModal from "../components/CodeforcesImportModal";
+import LeetCodeImportModal from "../components/LeetCodeImportModal";
 import { Target, Trophy, Clock, CheckCircle, RefreshCw, Zap, TrendingUp, Cpu, Activity, ArrowUpRight } from "lucide-react";
 
 export default function Dashboard() {
@@ -11,6 +12,9 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [activeDomain, setActiveDomain] = useState("cp");
   const [cfModalOpen, setCfModalOpen] = useState(false);
+  const [lcModalOpen, setLcModalOpen] = useState(false);
+
+
 
   // Virtual Contest Rep Timer
   const [timerSeconds, setTimerSeconds] = useState(1800);
@@ -128,6 +132,10 @@ export default function Dashboard() {
 
           <button onClick={() => setCfModalOpen(true)} className="btn-primary">
             <RefreshCw size={15} /> Sync Codeforces
+          </button>
+
+          <button onClick={() => setLcModalOpen(true)} className="btn-primary bg-gradient-to-r from-amber-500 to-orange-600">
+            <RefreshCw size={15} /> Sync LeetCode
           </button>
         </div>
       </div>
@@ -273,6 +281,13 @@ export default function Dashboard() {
       <CodeforcesImportModal
         isOpen={cfModalOpen}
         onClose={() => setCfModalOpen(false)}
+        onImportSuccess={loadData}
+        api={client}
+      />
+
+      <LeetCodeImportModal
+        isOpen={lcModalOpen}
+        onClose={() => setLcModalOpen(false)}
         onImportSuccess={loadData}
         api={client}
       />

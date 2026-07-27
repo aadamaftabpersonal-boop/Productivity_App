@@ -26,6 +26,16 @@ async def trigger_sync(db: AsyncSession = Depends(get_db)):
     return result
 
 
+from app.contests.leetcode_sync import import_leetcode_user_submissions
+
+class CodeforcesImportRequest(BaseModel):
+    handle: str
+    count: int = 50
+
+class LeetCodeImportRequest(BaseModel):
+    handle: str
+    count: int = 50
+
 @router.post("/import/codeforces", status_code=status.HTTP_200_OK)
 async def import_cf_user_history(
     payload: CodeforcesImportRequest,
@@ -37,6 +47,20 @@ async def import_cf_user_history(
         return res
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/import/leetcode", status_code=status.HTTP_200_OK)
+async def import_leetcode_user_history(
+    payload: LeetCodeImportRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        res = await import_leetcode_user_submissions(payload.handle, payload.count, db=db, user_id=current_user.id)
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 
 
 

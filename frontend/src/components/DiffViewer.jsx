@@ -19,15 +19,16 @@ export default function DiffViewer({ diffText }) {
           let styleClass = 'text-slate-300';
           let bgClass = '';
 
-          if (line.startsWith('+') && !line.startswith('+++')) {
+          if (line.startsWith('+') && !line.startsWith('+++')) {
             styleClass = 'text-emerald-400 font-semibold';
             bgClass = 'bg-emerald-500/10 px-2 rounded';
-          } else if (line.startsWith('-') && !line.startswith('---')) {
+          } else if (line.startsWith('-') && !line.startsWith('---')) {
             styleClass = 'text-rose-400 font-semibold';
             bgClass = 'bg-rose-500/10 px-2 rounded';
           } else if (line.startsWith('@@')) {
             styleClass = 'text-violet-400 italic';
           }
+
 
           return (
             <div key={idx} className={`${styleClass} ${bgClass} whitespace-pre`}>
