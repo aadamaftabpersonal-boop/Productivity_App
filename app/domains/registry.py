@@ -1,12 +1,14 @@
 from typing import Dict
 from app.domains.base import DomainAnalyzer
 from app.domains.cp import CPDomainAnalyzer
-from app.domains.ml import MLDomainAnalyzer
+from app.domains.swe import SWEDomainAnalyzer
 
 _ANALYZERS: Dict[str, DomainAnalyzer] = {
     "cp": CPDomainAnalyzer(),
-    "ml": MLDomainAnalyzer(),
+    "swe": SWEDomainAnalyzer(),
 }
+
+
 
 
 

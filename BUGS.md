@@ -65,9 +65,13 @@ Added `slowapi` IP/account token-bucket rate limiters on `/auth/login` (15/min),
 
 Enforced a 64KB (`65536` bytes) input size limit on submitted code payloads prior to AST parsing or background review pipeline execution. Oversized inputs are rejected immediately with HTTP 400 Bad Request.
 
-**Regression test**: `tests/test_security_limits.py`.
+### ISSUE-007: Domain scope narrowed to cp/swe; ML pipeline analyzer removed
+**Status: Fixed**
+
+Domain scope narrowed exclusively to CP (Algorithms) and SWE (Maintainability) to align strictly with the OA Prep Helper product thesis. Removed `app/domains/ml.py` and `tests/test_ml_analyzer.py`. Updated routers and frontend dropdown selectors to allow only `"cp"` and `"swe"` domains. Existing database records with `domain = 'ml'` remain preserved to prevent historical read crashes.
 
 ## Open
 
 *(No open issues remaining in Phase 0 queue.)*
+
 

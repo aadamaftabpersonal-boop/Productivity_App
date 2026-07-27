@@ -114,8 +114,9 @@ from pydantic import BaseModel
 
 
 class MultiFileProjectRequest(BaseModel):
-    domain: str = "ml"  # "ml" | "swe"
+    domain: str = "cp"  # "cp" | "swe"
     files: dict[str, str]
+
 
 @router.post("/submit-project", status_code=status.HTTP_200_OK)
 async def submit_multi_file_project(

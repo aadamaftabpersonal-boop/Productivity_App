@@ -43,9 +43,10 @@ async def get_weakness_analytics(
             "is_active_weakness": wr.is_active_weakness if wr else False,
         })
 
-    # Domain breakdown metrics (CP, ML, SWE)
+    # Domain breakdown metrics (CP, SWE)
     domain_stats = {}
-    for domain in ("cp", "ml", "swe"):
+    for domain in ("cp", "swe"):
+
         sub_res = await db.execute(
             select(func.count(CodeSubmission.id))
             .where(CodeSubmission.user_id == current_user.id, CodeSubmission.domain == domain)

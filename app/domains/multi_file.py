@@ -2,16 +2,17 @@ from typing import Dict, Any, Optional
 from tree_sitter import Parser, Node
 import tree_sitter_language_pack
 
-from app.domains.ml import MLDomainAnalyzer
 from app.domains.swe import SWEDomainAnalyzer
+from app.domains.registry import get_domain_analyzer
 
 
-async def analyze_multi_file_project(files: Dict[str, str], domain: str = "ml") -> Dict[str, Any]:
-    """Analyzes multi-file software and ML repositories for cross-file architecture and leakage issues."""
+async def analyze_multi_file_project(files: Dict[str, str], domain: str = "cp") -> Dict[str, Any]:
+    """Analyzes multi-file software repositories for cross-file architecture issues."""
     combined_code = ""
     file_diagnostics = []
 
-    analyzer = MLDomainAnalyzer() if domain.lower() == "ml" else SWEDomainAnalyzer()
+    analyzer = get_domain_analyzer(domain)
+
 
     for filename, code in files.items():
         analysis = await analyzer.analyze(code, "python")

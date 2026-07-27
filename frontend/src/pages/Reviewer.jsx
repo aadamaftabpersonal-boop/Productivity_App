@@ -121,8 +121,8 @@ export default function Reviewer() {
                   className="code-editor h-11 py-2 px-3 text-xs bg-slate-950 text-slate-200 border-slate-700"
                 >
                   <option value="cp">CP (Algorithms)</option>
-                  <option value="ml">ML (Pipelines)</option>
                   <option value="swe">SWE (Maintainability)</option>
+
                 </select>
               </div>
 

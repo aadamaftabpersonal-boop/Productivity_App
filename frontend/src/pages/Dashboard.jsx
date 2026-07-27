@@ -115,7 +115,8 @@ export default function Dashboard() {
           <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
             {/* Domain Switcher */}
             <div className="bg-slate-950/90 p-1.5 rounded-2xl border border-slate-800 flex gap-1">
-              {['cp', 'ml', 'swe'].map((dom) => (
+              {['cp', 'swe'].map((dom) => (
+
                 <button
                   key={dom}
                   onClick={() => setActiveDomain(dom)}
