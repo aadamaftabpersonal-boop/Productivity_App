@@ -4,13 +4,13 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.routers import auth, reviewer, contests, weakness, dashboard
-
+from app.routers import auth, reviewer, contests, weakness, dashboard, analytics
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(title="Student Portal API", version="0.1.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -28,6 +28,8 @@ app.include_router(reviewer.router)
 app.include_router(contests.router)
 app.include_router(weakness.router)
 app.include_router(dashboard.router)
+app.include_router(analytics.router)
+
 
 
 

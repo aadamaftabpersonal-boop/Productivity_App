@@ -102,11 +102,24 @@ async def get_job_status(
     if submission.review is None:
         return {"job_id": job_id, "status": "processing", "review": None}
 
-    return {
-        "job_id": job_id,
-        "status": "completed",
-        "submission": submission,
-    }
+from app.domains.multi_file import analyze_multi_file_project
+from pydantic import BaseModel
+
+class MultiFileProjectRequest(BaseModel):
+    domain: str = "ml"  # "ml" | "swe"
+    files: dict[str, str]
+
+@router.post("/submit-project", status_code=status.HTTP_200_OK)
+async def submit_multi_file_project(
+    payload: MultiFileProjectRequest,
+    current_user: User = Depends(get_current_user),
+):
+    if not payload.files:
+        raise HTTPException(status_code=400, detail="Files dictionary cannot be empty")
+    
+    res = await analyze_multi_file_project(payload.files, payload.domain)
+    return res
+
 
 
 
