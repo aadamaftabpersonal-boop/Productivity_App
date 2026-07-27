@@ -1,10 +1,13 @@
 from typing import Dict
 from app.domains.base import DomainAnalyzer
 from app.domains.cp import CPDomainAnalyzer
+from app.domains.ml import MLDomainAnalyzer
 
 _ANALYZERS: Dict[str, DomainAnalyzer] = {
     "cp": CPDomainAnalyzer(),
+    "ml": MLDomainAnalyzer(),
 }
+
 
 
 def register_domain_analyzer(analyzer: DomainAnalyzer):
