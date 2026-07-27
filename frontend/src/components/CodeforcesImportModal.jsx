@@ -16,8 +16,9 @@ export default function CodeforcesImportModal({ isOpen, onClose, onImportSuccess
     setError(null);
     setSuccessResult(null);
 
-    try:
+    try {
       const res = await api.post('/contests/import/codeforces', { handle: handle.trim(), count: 50 });
+
       setSuccessResult(res.data);
       if (onImportSuccess) onImportSuccess(res.data);
     } catch (err) {
