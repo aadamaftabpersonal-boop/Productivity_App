@@ -19,6 +19,8 @@ export default function Reviewer() {
   const [selected, setSelected] = useState(null);
   const [activeTab, setActiveTab] = useState("summary"); // "summary" | "diff" | "ast" | "fuzzer"
   const [unlockedTier, setUnlockedTier] = useState(1);
+  const [jobStatus, setJobStatus] = useState("idle"); // "idle" | "processing" | "completed" | "failed"
+
 
 
   const loadHistory = () => {
