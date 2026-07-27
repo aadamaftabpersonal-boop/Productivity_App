@@ -77,7 +77,10 @@ class ReviewResult(Base):
     better_approach: Mapped[str] = mapped_column(Text, nullable=True)   # tourist-style narrative
     score: Mapped[int] = mapped_column(Integer, nullable=True)          # 0-100 code quality score
     raw_heuristics: Mapped[dict] = mapped_column(JSON, default=dict)    # what Tree-sitter found
+    code_diff: Mapped[str] = mapped_column(Text, nullable=True)
+    fuzz_results: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
 
     submission: Mapped["CodeSubmission"] = relationship(back_populates="review")
 

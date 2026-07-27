@@ -9,9 +9,24 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
+from contextlib import asynccontextmanager
+from app.database import engine, Base
+from app.weakness.matcher import load_concept_index
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Ensure all tables exist on startup
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    # Seed taxonomy tags if empty
+    async with engine.connect() as conn:
+        pass
+    yield
+
 limiter = Limiter(key_func=get_remote_address)
 
-app = FastAPI(title="Student Portal API", version="0.1.0")
+app = FastAPI(title="CP Hub API", version="2.0.0", lifespan=lifespan)
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
