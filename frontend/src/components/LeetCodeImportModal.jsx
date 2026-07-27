@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { CheckCircle, Award, Trophy, User } from 'lucide-react';
 
-export default function LeetCodeImportModal({ isOpen, onClose, onImportSuccess, api }) {
-  const [handle, setHandle] = useState('');
+export default function LeetCodeImportModal({ isOpen, onClose, onImportSuccess, api, initialHandle = '' }) {
+  const [handle, setHandle] = React.useState(initialHandle || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successResult, setSuccessResult] = useState(null);
 
+  React.useEffect(() => {
+    if (initialHandle) setHandle(initialHandle);
+  }, [initialHandle]);
+
   if (!isOpen) return null;
+
 
   const handleImport = async (e) => {
     e.preventDefault();

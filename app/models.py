@@ -23,7 +23,10 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(50), default="student", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     discord_webhook_url: Mapped[str] = mapped_column(String(500), nullable=True)
+    leetcode_handle: Mapped[str] = mapped_column(String(255), nullable=True)
+    codeforces_handle: Mapped[str] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
 
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"

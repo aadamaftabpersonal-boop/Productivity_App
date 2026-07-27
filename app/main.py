@@ -26,7 +26,10 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
         await conn.execute(text("ALTER TABLE weakness_records ADD COLUMN IF NOT EXISTS stability_days FLOAT DEFAULT 1.0;"))
         await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS discord_webhook_url VARCHAR(500);"))
+        await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS leetcode_handle VARCHAR(255);"))
+        await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS codeforces_handle VARCHAR(255);"))
         await conn.execute(text("ALTER TABLE code_submissions ADD COLUMN IF NOT EXISTS user_predicted_complexity VARCHAR(50);"))
+
         await conn.execute(text("ALTER TABLE code_submissions ADD COLUMN IF NOT EXISTS confidence_level VARCHAR(50);"))
 
     # Seed taxonomy tags if empty

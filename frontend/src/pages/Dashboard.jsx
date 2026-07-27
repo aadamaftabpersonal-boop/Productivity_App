@@ -411,6 +411,7 @@ export default function Dashboard() {
         onClose={() => setCfModalOpen(false)}
         onImportSuccess={loadData}
         api={client}
+        initialHandle={data?.user?.codeforces_handle || ''}
       />
 
       <LeetCodeImportModal
@@ -418,7 +419,9 @@ export default function Dashboard() {
         onClose={() => setLcModalOpen(false)}
         onImportSuccess={loadData}
         api={client}
+        initialHandle={data?.user?.leetcode_handle || ''}
       />
+
 
       <ShareableReportModal
         isOpen={shareModalOpen}

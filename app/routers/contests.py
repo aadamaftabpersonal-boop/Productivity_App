@@ -43,6 +43,8 @@ async def import_cf_user_history(
     current_user: User = Depends(get_current_user),
 ):
     try:
+        current_user.codeforces_handle = payload.handle
+        await db.commit()
         res = await import_codeforces_history(db, current_user.id, payload.handle, payload.count)
         return res
     except ValueError as e:
@@ -55,10 +57,13 @@ async def import_leetcode_user_history(
     current_user: User = Depends(get_current_user),
 ):
     try:
+        current_user.leetcode_handle = payload.handle
+        await db.commit()
         res = await import_leetcode_user_submissions(payload.handle, payload.count, db=db, user_id=current_user.id)
         return res
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 
 

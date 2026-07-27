@@ -18,7 +18,10 @@ class UserOut(BaseModel):
     full_name: str | None
     role: str
     discord_webhook_url: str | None = None
+    leetcode_handle: str | None = None
+    codeforces_handle: str | None = None
     created_at: datetime
+
 
 class TokenPair(BaseModel):
     access_token: str
