@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Terminal, Lock, Mail, ArrowRight } from "lucide-react";
+import { Lock, Mail, ArrowRight, Cpu } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -19,36 +19,36 @@ export default function Login() {
       await login(email, password);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.detail || "Login failed. Check your credentials.");
+      setError(err.response?.data?.detail || "Login failed. Check your email and password.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background Glowing Orbs */}
-      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden bg-[#070a12]">
+      {/* Background Radial Glow Effects */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-violet-500/10 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Header */}
+        {/* Logo & Header */}
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono mb-3">
-            <Terminal size={14} /> CP Hub Diagnostic Platform
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25 mb-4">
+            <Cpu size={24} />
           </div>
           <h1 className="text-3xl font-extrabold text-white font-heading tracking-tight">
             Welcome Back
           </h1>
-          <p className="text-slate-400 text-sm mt-1 font-sans">
-            Sign in to track your longitudinal code weakness signals
+          <p className="text-slate-400 text-sm mt-1.5 font-sans">
+            Sign in to track code weaknesses and AST analysis
           </p>
         </div>
 
-        {/* Form Card */}
-        <form onSubmit={handleSubmit} className="glass-card p-8 space-y-5 border-cyan-500/20 shadow-2xl">
+        {/* Centered Glass Form Card */}
+        <form onSubmit={handleSubmit} className="saas-card p-8 space-y-5 border-cyan-500/30">
           {error && (
-            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium">
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold">
               {error}
             </div>
           )}
@@ -58,15 +58,15 @@ export default function Login() {
               Email Address
             </label>
             <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
               <input
                 type="email"
                 required
-                placeholder="name@company.com"
+                placeholder="me@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="code-editor h-12 text-sm pl-10"
+                className="saas-input h-12 pl-11 pr-4"
               />
-              <Mail className="absolute left-3.5 top-3.5 text-slate-500" size={18} />
             </div>
           </div>
 
@@ -75,26 +75,26 @@ export default function Login() {
               Password
             </label>
             <div className="relative">
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="code-editor h-12 text-sm pl-10"
+                className="saas-input h-12 pl-11 pr-4"
               />
-              <Lock className="absolute left-3.5 top-3.5 text-slate-500" size={18} />
             </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary w-full justify-center text-base py-3 mt-2"
+            className="btn-primary w-full justify-center text-sm py-3.5 mt-2"
           >
             {loading ? "Authenticating..." : (
               <>
-                Sign In to Engine <ArrowRight size={18} />
+                Sign In to Engine <ArrowRight size={16} />
               </>
             )}
           </button>

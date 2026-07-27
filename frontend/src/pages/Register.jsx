@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Terminal, Lock, Mail, User as UserIcon, ArrowRight } from "lucide-react";
+import { Lock, Mail, User as UserIcon, ArrowRight, Cpu } from "lucide-react";
 
 export default function Register() {
   const [form, setForm] = useState({ email: "", password: "", full_name: "" });
@@ -25,29 +25,29 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background Glowing Orbs */}
-      <div className="absolute top-1/4 right-1/3 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden bg-[#070a12]">
+      {/* Background Radial Glow Effects */}
+      <div className="absolute top-1/4 right-1/3 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/3 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Header */}
+        {/* Logo & Header */}
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-mono mb-3">
-            <Terminal size={14} /> Join CP Hub Diagnostic Platform
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 to-cyan-500 text-white shadow-lg shadow-violet-500/25 mb-4">
+            <Cpu size={24} />
           </div>
           <h1 className="text-3xl font-extrabold text-white font-heading tracking-tight">
             Create Account
           </h1>
-          <p className="text-slate-400 text-sm mt-1 font-sans">
-            Start tracking your code mastery & empirical complexity growth
+          <p className="text-slate-400 text-sm mt-1.5 font-sans">
+            Start tracking code mastery and empirical complexity growth
           </p>
         </div>
 
-        {/* Form Card */}
-        <form onSubmit={handleSubmit} className="glass-card p-8 space-y-5 border-violet-500/20 shadow-2xl">
+        {/* Centered Glass Form Card */}
+        <form onSubmit={handleSubmit} className="saas-card p-8 space-y-5 border-violet-500/30">
           {error && (
-            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium">
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold">
               {error}
             </div>
           )}
@@ -57,14 +57,14 @@ export default function Register() {
               Full Name
             </label>
             <div className="relative">
+              <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
               <input
                 type="text"
                 placeholder="Alex Mercer"
                 value={form.full_name}
                 onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                className="code-editor h-12 text-sm pl-10"
+                className="saas-input h-12 pl-11 pr-4"
               />
-              <UserIcon className="absolute left-3.5 top-3.5 text-slate-500" size={18} />
             </div>
           </div>
 
@@ -73,15 +73,15 @@ export default function Register() {
               Email Address
             </label>
             <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
               <input
                 type="email"
                 required
                 placeholder="alex@domain.com"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="code-editor h-12 text-sm pl-10"
+                className="saas-input h-12 pl-11 pr-4"
               />
-              <Mail className="absolute left-3.5 top-3.5 text-slate-500" size={18} />
             </div>
           </div>
 
@@ -90,26 +90,26 @@ export default function Register() {
               Password
             </label>
             <div className="relative">
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="code-editor h-12 text-sm pl-10"
+                className="saas-input h-12 pl-11 pr-4"
               />
-              <Lock className="absolute left-3.5 top-3.5 text-slate-500" size={18} />
             </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary w-full justify-center text-base py-3 mt-2 bg-gradient-to-r from-violet-600 to-cyan-500"
+            className="btn-primary w-full justify-center text-sm py-3.5 mt-2 bg-gradient-to-r from-violet-600 to-cyan-500"
           >
-            {loading ? "Creating Profile..." : (
+            {loading ? "Creating Account..." : (
               <>
-                Create CP Hub Account <ArrowRight size={18} />
+                Create CP Hub Account <ArrowRight size={16} />
               </>
             )}
           </button>
