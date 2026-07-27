@@ -378,7 +378,10 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
+          </div>
+
           {/* Discord Webhook Resurfacing Pings Card */}
+
           <div className="saas-card p-6 border-indigo-500/30">
             <h2 className="text-lg font-bold text-white mb-2 font-heading flex items-center gap-2">
               <Bell size={18} className="text-indigo-400" /> Discord Resurfacing Pings
